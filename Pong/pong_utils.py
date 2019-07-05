@@ -91,7 +91,8 @@ def collect_trajectories(envs, model, num_steps):
             break
     return log_probs , states, actions, rewards , next_state, masks, values
 
-def test_env(vis=False):
+def test_env(env_name, model, vis=False):
+    env = gym.make(env_name)
     f1 = env.reset()
     f2,_,_,_ = env.step(0)
     if vis: env.render()
@@ -110,61 +111,6 @@ def test_env(vis=False):
         # print(total_reward)
     return total_reward
 
-def compute_gae(next_value, rewards, masks, values, gamma=0.99, tau=0.95):
-    
-    values = values + [next_value]
-    gae = 0
-    returns = []
-    for step in reversed(range(len(rewards))):
-        delta = rewards[step] + gamma * values[step + 1] * masks[step] - values[step]
-        gae = delta + gamma * tau * masks[step] * gae
-        returns.insert(0, gae + values[step])
-    return returns
-
-def ppo_iter(mini_batch_size, states, actions, log_probs, returns, advantage): # 전체 배치에서 mini_batch 를 만드는 것이다.
-    batch_size = states.size(0)
-    ids = np.random.permutation(batch_size)
-    ids = np.split(ids, batch_size // mini_batch_size)
-    for i in range(len(ids)):
-        yield states[ids[i], :], actions[ids[i]], log_probs[ids[i]], returns[ids[i], :], advantage[ids[i], :]
-        
-
-def ppo_update(ppo_epochs, mini_batch_size, states, actios, log_probs, returns, advantages, clip_param=0.2): # training
-    mean_loss = 0
-    for _ in range(ppo_epochs):
-        loss_sum = 0
-        for state, action, old_log_probs, return_, advantage in ppo_iter(mini_batch_size, states, actions, log_probs, returns, advantages):
-            with torch.autograd.detect_anomaly():
-                pi, value = model(state)
-                dist = Categorical(pi)
-                #     new_log_probs a= dist.log_prob(action)
-                
-                pi_a = pi.gather(1,action.unsqueeze(-1))
-                # logging.warning(f'{pi_a} : pi_a')
-                new_log_probs = torch.log(pi_a)
-
-                ratio = (new_log_probs - old_log_probs).exp()
-                surr1 = ratio * advantage
-                surr2 = torch.clamp(ratio, 1.0 - clip_param, 1.0 + clip_param) * advantage
-
-
-                actor_loss  = - torch.min(surr1, surr2).mean()
-                # critic_loss = (return_.detach() - value).pow(2).mean()
-                entropy = dist.entropy()
-
-                # loss = 0.5 * critic_loss + actor_loss  - 0.01 * entropy
-                loss = actor_loss  - 0.01 * entropy
-
-                optimizer.zero_grad()
-                
-                loss.mean().backward()
-                
-                optimizer.step()
-                loss_sum += loss.mean().item()
-        mean_loss+=loss_sum
-
-    print(mean_loss / ppo_epochs)
-    return mean_loss / ppo_epochs
 
 def states_to_prob(model, states):
     states = torch.stack(states)

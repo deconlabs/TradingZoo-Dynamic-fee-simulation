@@ -2,13 +2,17 @@
 # log_file_name = "ppo_pong.log"
 # logging.basicConfig(filename=log_file_name, filemode='w', format='%(name)s - %(levelname)s - %(message)s', level = logging.DEBUG)
 import numpy as np
+import matplotlib
+matplotlib.use('PS')
+import matplotlib.pyplot as plt
 
+import torch
 import torch.optim as optim
 
 from model import ActorCritic
 import pong_utils
 device   = pong_utils.device
-from pong_utils import preprocess_single, preprocess_batch, make_env, collect_trajectories, test_env, compute_gae, ppo_iter, ppo_update, states_to_prob, clipped_surrogate
+from pong_utils import preprocess_single, preprocess_batch, make_env, collect_trajectories, test_env, states_to_prob, clipped_surrogate
 from arguments import argparser
 from common.multiprocessing_env import SubprocVecEnv
 
@@ -76,9 +80,9 @@ if __name__ =="__main__":
         beta *= 0.995
                 
         if episode_idx % 100 == 0:
-                torch.save(model.state_dict(), f'PongDeterministic-v4_{episode_idx+load_weight_n}.pth')
-                plt.plot(scores_list)
-                plt.title(f'{episode_idx}th score')
-                plt.savefig(f'plot/{episode_idx}th_score.png')
-                test_rewards = np.mean([test_env() for _ in range(10)])
-                print(f"test rewards = {test_rewards}")
+            torch.save(model.state_dict(), f'PongDeterministic-v4_{episode_idx+load_weight_n}.pth')
+            plt.plot(scores_list)
+            plt.title(f'{episode_idx}th score')
+            plt.savefig(f'plot/{episode_idx}th_score.png')
+            test_rewards = np.mean([test_env(env_name, model) for _ in range(10)])
+            print(f"test rewards = {test_rewards}")
