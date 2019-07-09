@@ -1,6 +1,7 @@
 import random
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 import torch
 import torch.nn as nn
@@ -16,13 +17,13 @@ from PPO.common.multiprocessing_env import  SubprocVecEnv
 
 # Hyperparameters
 device = device
-learning_rate = 0.005
-discount = 0.99
-eps = 0.1
+learning_rate = 0.001
+discount = 0.995
+eps = 0.05
 K_epoch = 3
-num_steps = 32
+num_steps = 128
 beta = 0.4
-num_envs = 8
+num_envs = 16
 
 df = pd.read_hdf('dataset/SGXTWsample.h5', 'STW')
 df.fillna(method='ffill', inplace=True)
@@ -42,7 +43,7 @@ def make_env():
 
 def main():
     global beta
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # if torch.cuda.is_available():
     #     torch.set_default_tensor_type('torch.cuda.FloatTensor')
     save_interval = 100
@@ -52,42 +53,48 @@ def main():
     model = CNNTradingAgent().to(device)
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
-    print_interval = 20
+    print_interval = 10
 
+    scores_list = []
+    loss_list = []
     for n_epi in range(10000):  # 게임 1만판 진행
         n_epi +=1
-        print(n_epi)
+        loss = 0.0
         log_probs, states, actions, rewards, next_state, masks, values = collect_trajectories(envs,model,num_steps)
         
         # raise Exception("True" if torch.any(torch.isnan(torch.stack(states))) else "False")
-
-        scores_list = []
-        score = 0.0
-        score += np.asarray(rewards).sum()
-        scores_list.append(score)
-        loss_list = []
-
         if beta>0.01:
             beta*=discount
         for _ in range(K_epoch):
-
-            # uncomment to utilize your own clipped function!
-            # raise Exception(type(states), states[0].size())
-
             L = -clipped_surrogate(envs,model, log_probs, states, actions, rewards, discount, eps, beta)
 
             optimizer.zero_grad()
             L.backward()
             optimizer.step()
 
-            loss_list.append(L.item())
+            loss+=L.item()
             del L
+
+        
+        score = np.asarray(rewards).sum()
+        scores_list.append(score)
+        loss_list.append(loss)
 
         if n_epi % print_interval == 0 and n_epi != 0:
             print("# of episode :{}, avg score : {:.4f}, loss : {:.6f}".format(
-                n_epi, score / print_interval, np.mean(loss_list)))
+                n_epi, score / print_interval, loss / print_interval))
             print("actions : ", torch.cat(actions))
-            print("rewards : ", rewards)
+        
+        if n_epi % 100 ==0:
+            torch.save(model.state_dict(), f'TradingGym_{n_epi}.pth')
+            # print("score_lsit " ,scores_list)
+            # print("loss_lsit" ,loss_list)
+            # plt.plot(scores_list)
+            # plt.title(f'{n_epi}th score')
+            # plt.savefig(f'plot/{n_epi}th_score.png')
+            # test_rewards = np.mean([test_env(env_name, model) for _ in range(10)])
+            # print(f"test rewards = {test_rewards}")
+            # print("rewards : ", rewards)
 
         # if n_epi % save_interval == 0 and n_epi != 0:
         #     if len(os.listdir('minimalRL/weight')) >= 5:

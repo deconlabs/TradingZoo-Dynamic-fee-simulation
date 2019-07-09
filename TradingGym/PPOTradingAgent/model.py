@@ -3,8 +3,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class CNNTradingAgent(nn.Module):
-    def __init__(self):
+    def __init__(self, num_features=16):
         super().__init__()
+
+        self.num_features = num_features
 
         # If `True`, switch the network into evaluation mode when the batch size of the input is 1.
         # This is to avoid BatchNorm error when taking a single batch of input.
@@ -12,41 +14,41 @@ class CNNTradingAgent(nn.Module):
 
         # Bottleneck idea from Google's MobileNetV2
 
-        # N * 256 * 16
+        # N * 256 * num_features
         # x.transpose(-1, -2).contiguous().unsqueeze(-1)
-        # N * 16 * 256 * 1
+        # N * num_features * 256 * 1
         self.conv0 = nn.Sequential(
             nn.LayerNorm([256, 1]),
-            nn.Conv2d(16, 32, kernel_size=(3, 1), stride=(2, 1), padding=(1, 0)),
-            nn.BatchNorm2d(32)
+            nn.Conv2d(num_features, num_features * 2, kernel_size=(3, 1), stride=(2, 1), padding=(1, 0)),
+            nn.BatchNorm2d(num_features * 2)
         )
-        # N * 32 * 128 * 1
+        # N * (num_features*2) * 128 * 1
         self.bottleneck0 = nn.Sequential(
-            nn.Conv2d(32, 192, kernel_size=1),
-            nn.BatchNorm2d(192),
+            nn.Conv2d(num_features * 2, num_features * 12, kernel_size=1),
+            nn.BatchNorm2d(num_features * 12),
             nn.ReLU6(),
-            nn.Conv2d(192, 192, kernel_size=(3, 1), stride=(2, 1), padding=(1, 0), groups=192),
-            nn.BatchNorm2d(192),
+            nn.Conv2d(num_features * 12, num_features * 12, kernel_size=(3, 1), stride=(2, 1), padding=(1, 0), groups=num_features * 12),
+            nn.BatchNorm2d(num_features * 12),
             nn.ReLU6(),
-            nn.Conv2d(192, 64, kernel_size=1),
-            nn.BatchNorm2d(64),
+            nn.Conv2d(num_features * 12, num_features * 4, kernel_size=1),
+            nn.BatchNorm2d(num_features * 4),
             nn.AvgPool2d(kernel_size=(2, 1))
         )
-        # N * 64 * 32 * 1
+        # N * (num_features*4) * 32 * 1
         self.bottleneck1 = nn.Sequential(
-            nn.Conv2d(64, 384, kernel_size=1),
-            nn.BatchNorm2d(384),
+            nn.Conv2d(num_features * 4, num_features * 24, kernel_size=1),
+            nn.BatchNorm2d(num_features * 24),
             nn.ReLU6(),
-            nn.Conv2d(384, 384, kernel_size=(3, 1), stride=(2, 1), padding=(1, 0), groups=384),
-            nn.BatchNorm2d(384),
+            nn.Conv2d(num_features * 24, num_features * 24, kernel_size=(3, 1), stride=(2, 1), padding=(1, 0), groups=num_features * 24),
+            nn.BatchNorm2d(num_features * 24),
             nn.ReLU6(),
-            nn.Conv2d(384, 128, kernel_size=1),
-            nn.BatchNorm2d(128),
+            nn.Conv2d(num_features * 24, num_features * 8, kernel_size=1),
+            nn.BatchNorm2d(num_features * 8),
             nn.AvgPool2d(kernel_size=(2, 1))
         )
-        # N * 128 * 8 * 1
+        # N * (num_features*8) * 8 * 1
         self.conv1 = nn.Sequential(
-            nn.Conv2d(128, 512, kernel_size=1),
+            nn.Conv2d(num_features * 8, 512, kernel_size=1),
             nn.BatchNorm2d(512),
             nn.AvgPool2d(kernel_size=(8, 1))
         )
