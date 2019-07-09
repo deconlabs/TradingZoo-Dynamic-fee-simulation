@@ -10,13 +10,13 @@ import matplotlib.patches as patches
 from colour import Color
 
 class trading_env:
-    def __init__(self, args,env_id, obs_data_len, step_len,
+    def __init__(self, custom_args,env_id, obs_data_len, step_len,
                  df, fee, max_position=5, deal_col_name='price', 
                  feature_names=['price', 'volume'], 
                  return_transaction=True,
                  fluc_div=100.0, gameover_limit=5,
                  *args, **kwargs):
-        self.args = args
+        self.custom_args = custom_args
         """
         #assert df 
         # need deal price as essential and specified the df format
@@ -236,7 +236,7 @@ class trading_env:
             self._long(open_posi, enter_price, current_mkt_position, current_price_mean)
         
         elif action == 2 and -self.max_position < current_mkt_position <= 0:
-            if self.args.no_short:
+            if self.custom_args.no_short:
                 action = 0
             else:
                 open_posi = (current_mkt_position == 0)

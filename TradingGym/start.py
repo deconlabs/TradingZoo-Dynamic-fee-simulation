@@ -32,7 +32,7 @@ df.fillna(method='ffill', inplace=True)
 # df.Price = np.arange(len(df))*100.
 def make_env():
     def _thunk():
-        env = trading_env.make(args= args, env_id='training_v1', obs_data_len=256, step_len=16,
+        env = trading_env.make(custom_args= args, env_id='training_v1', obs_data_len=256, step_len=16,
                                df=df, fee=0.0, max_position=5, deal_col_name='Price',
                                feature_names=['Price', 'Volume',
                                               'Ask_price', 'Bid_price',
