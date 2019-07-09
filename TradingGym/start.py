@@ -13,9 +13,11 @@ import trading_env
 from utils import collect_trajectories, device, clipped_surrogate
 from PPOTradingAgent.model import CNNTradingAgent
 from PPO.common.multiprocessing_env import  SubprocVecEnv
+from arguments import argparser
 
 
 # Hyperparameters
+args = argparser()
 device = device
 learning_rate = 0.001
 discount = 0.995
@@ -30,7 +32,7 @@ df.fillna(method='ffill', inplace=True)
 # df.Price = np.arange(len(df))*100.
 def make_env():
     def _thunk():
-        env = trading_env.make(env_id='training_v1', obs_data_len=256, step_len=16,
+        env = trading_env.make(args= args, env_id='training_v1', obs_data_len=256, step_len=16,
                                df=df, fee=0.0, max_position=5, deal_col_name='Price',
                                feature_names=['Price', 'Volume',
                                               'Ask_price', 'Bid_price',

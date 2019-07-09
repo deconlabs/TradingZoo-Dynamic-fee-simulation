@@ -10,12 +10,13 @@ import matplotlib.patches as patches
 from colour import Color
 
 class trading_env:
-    def __init__(self, env_id, obs_data_len, step_len,
+    def __init__(self, args,env_id, obs_data_len, step_len,
                  df, fee, max_position=5, deal_col_name='price', 
                  feature_names=['price', 'volume'], 
                  return_transaction=True,
                  fluc_div=100.0, gameover_limit=5,
                  *args, **kwargs):
+        self.args = args
         """
         #assert df 
         # need deal price as essential and specified the df format
@@ -83,15 +84,15 @@ class trading_env:
         # define the observation feature
         self.obs_features = self.df_sample[self.using_feature].as_matrix()
         #maybe make market position feature in final feature, set as option
-        self.posi_arr = np.zeros_like(self.price)
+        self.posi_arr = np.zeros_like(self.price) #보유 주식수
         # position variation
-        self.posi_variation_arr = np.zeros_like(self.posi_arr)
+        self.posi_variation_arr = np.zeros_like(self.posi_arr) #보유 주식수의 변화기록
         # position entry or cover :new_entry->1  increase->2 cover->-1 decrease->-2
-        self.posi_entry_cover_arr = np.zeros_like(self.posi_arr)
+        self.posi_entry_cover_arr = np.zeros_like(self.posi_arr)  #long 포지션인지 short 포지션인지 기록해둠. 아니면 증감
         # self.position_feature = np.array(self.posi_l[self.step_st:self.step_st+self.obs_len])/(self.max_position*2)+0.5
         
         self.price_mean_arr = self.price.copy()
-        self.reward_fluctuant_arr = (self.price - self.price_mean_arr)*self.posi_arr
+        self.reward_fluctuant_arr = (self.price - self.price_mean_arr)*self.posi_arr #
         self.reward_makereal_arr = self.posi_arr.copy()
         self.reward_arr = self.reward_fluctuant_arr*self.reward_makereal_arr
 
@@ -235,8 +236,11 @@ class trading_env:
             self._long(open_posi, enter_price, current_mkt_position, current_price_mean)
         
         elif action == 2 and -self.max_position < current_mkt_position <= 0:
-            open_posi = (current_mkt_position == 0)
-            self._short(open_posi, enter_price, current_mkt_position, current_price_mean)
+            if self.args.no_short:
+                action = 0
+            else:
+                open_posi = (current_mkt_position == 0)
+                self._short(open_posi, enter_price, current_mkt_position, current_price_mean)
         
         elif action == 1 and current_mkt_position<0:
             self._short_cover(current_price_mean, current_mkt_position)

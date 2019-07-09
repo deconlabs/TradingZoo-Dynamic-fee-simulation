@@ -36,9 +36,9 @@ while not done:
     action = dist.sample()
     state, reward, done, info = env.step(action.cpu().numpy())
     # print(state, reward)
-    env.render()
-
-    time.sleep(0.3)
+    # env.render()
+    #
+    # time.sleep(0.3)
     if done:
         input()
         break
