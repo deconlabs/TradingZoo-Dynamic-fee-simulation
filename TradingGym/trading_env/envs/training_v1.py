@@ -296,18 +296,18 @@ class trading_env:
                             linestyle='-',linewidth=1.5,
                             fill=True)
                             )     # remove background)
-        # self.fluc_reward_plot_p = self.ax2.fill_between(price_x, 0, self.reward_fluctuant_arr[:self.step_st+self.obs_len],
-        #                                                 where=self.reward_fluctuant_arr[:self.step_st+self.obs_len]>=0,
-        #                                                 facecolor=(1, 0.8, 0, 0.2), edgecolor=(1, 0.8, 0, 0.9), linewidth=0.8, label = "fluc_reward_plot_p")
-        # self.fluc_reward_plot_n = self.ax2.fill_between(price_x, 0, self.reward_fluctuant_arr[:self.step_st+self.obs_len],
-        #                                                 where=self.reward_fluctuant_arr[:self.step_st+self.obs_len]<=0,
-        #                                                 facecolor=(0, 1, 0.8, 0.2), edgecolor=(0, 1, 0.8, 0.9), linewidth=0.8, label = "fluc_reward_plot_n")
-        # self.posi_plot_long = self.ax2.fill_between(price_x, 0, self.posi_arr[:self.step_st+self.obs_len],
-        #                                             where=self.posi_arr[:self.step_st+self.obs_len]>=0,
-        #                                             facecolor=(1, 0.5, 0, 0.2), edgecolor=(1, 0.5, 0, 0.9), linewidth=1, label = "posi_plot_long")
-        # self.posi_plot_short = self.ax2.fill_between(price_x, 0, self.posi_arr[:self.step_st+self.obs_len],
-        #                                              where=self.posi_arr[:self.step_st+self.obs_len]<=0,
-        #                                              facecolor=(0, 0.5, 1, 0.2), edgecolor=(0, 0.5, 1, 0.9), linewidth=1, label = "posi_plot_short")
+        self.fluc_reward_plot_p = self.ax2.fill_between(price_x, 0, self.reward_fluctuant_arr[:self.step_st+self.obs_len],
+                                                        where=self.reward_fluctuant_arr[:self.step_st+self.obs_len]>=0,
+                                                        facecolor=(1, 0.8, 0, 0.2), edgecolor=(1, 0.8, 0, 0.9), linewidth=0.8, label = "fluc_reward_plot_p")
+        self.fluc_reward_plot_n = self.ax2.fill_between(price_x, 0, self.reward_fluctuant_arr[:self.step_st+self.obs_len],
+                                                        where=self.reward_fluctuant_arr[:self.step_st+self.obs_len]<=0,
+                                                        facecolor=(0, 1, 0.8, 0.2), edgecolor=(0, 1, 0.8, 0.9), linewidth=0.8, label = "fluc_reward_plot_n")
+        self.posi_plot_long = self.ax2.fill_between(price_x, 0, self.posi_arr[:self.step_st+self.obs_len],
+                                                    where=self.posi_arr[:self.step_st+self.obs_len]>=0,
+                                                    facecolor=(1, 0.5, 0, 0.2), edgecolor=(1, 0.5, 0, 0.9), linewidth=1, label = "posi_plot_long")
+        self.posi_plot_short = self.ax2.fill_between(price_x, 0, self.posi_arr[:self.step_st+self.obs_len],
+                                                     where=self.posi_arr[:self.step_st+self.obs_len]<=0,
+                                                     facecolor=(0, 0.5, 1, 0.2), edgecolor=(0, 0.5, 1, 0.9), linewidth=1, label = "posi_plot_short")
         self.reward_plot_p = self.ax2.fill_between(price_x, 0, 
                                                    self.reward_arr[:self.step_st+self.obs_len].cumsum(),
                                                    where=self.reward_arr[:self.step_st+self.obs_len].cumsum()>=0,
