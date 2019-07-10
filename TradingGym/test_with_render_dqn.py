@@ -14,16 +14,22 @@ args = argparser()
 #hyperparmeter
 device = torch.device("cpu")
 dqn_agent.set_device(device)
-load_weight_n = 100
+load_weight_n = 700
 
 df = pd.read_hdf('dataset/SGXTWsample.h5', 'STW')
 
-env = trading_env.make(custom_args=args, env_id='training_v1', obs_data_len=256, step_len=16,
-                       df=df, fee=0.0, max_position=5, deal_col_name='Price',
-                       feature_names=['Price', 'Volume',
-                                      'Ask_price','Bid_price',
-                                      'Ask_deal_vol','Bid_deal_vol',
-                                      'Bid/Ask_deal', 'Updown'])
+# env = trading_env.make(custom_args=args, env_id='training_v1', obs_data_len=256, step_len=16,
+#                        df=df, fee=0.0, max_position=5, deal_col_name='Price',
+#                        feature_names=['Price', 'Volume',
+#                                       'Ask_price','Bid_price',
+#                                       'Ask_deal_vol','Bid_deal_vol',
+#                                       'Bid/Ask_deal', 'Updown'])
+env = trading_env.make(custom_args = args, env_id='backtest_v1', obs_data_len=256, step_len=16,
+                       df=df, fee=0.1, max_position=5, deal_col_name='Price',
+                        feature_names=['Price', 'Volume',
+                                       'Ask_price','Bid_price',
+                                       'Ask_deal_vol','Bid_deal_vol',
+                                       'Bid/Ask_deal', 'Updown'])
 state = env.reset()
 env.render()
 
