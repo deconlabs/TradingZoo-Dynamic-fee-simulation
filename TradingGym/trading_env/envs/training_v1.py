@@ -16,7 +16,7 @@ class trading_env:
                  return_transaction=True,
                  fluc_div=100.0, gameover_limit=5,
                  *args, **kwargs):
-        self.custom_args = custom_args
+        self.custom_args = custom_args.no_short
         """
         #assert df 
         # need deal price as essential and specified the df format

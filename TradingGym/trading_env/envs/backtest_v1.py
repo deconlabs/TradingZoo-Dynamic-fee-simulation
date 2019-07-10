@@ -11,13 +11,14 @@ from colour import Color
 
 
 class trading_env:
-    def __init__(self, env_id, obs_data_len, step_len,
+    def __init__(self, custom_args, env_id, obs_data_len, step_len,
                  df, fee, max_position=5, deal_col_name='price', 
                  feature_names=['price', 'volume'], 
                  return_transaction=True,
                  fluc_div=100.0, gameover_limit=5,
                  *args, **kwargs):
-        self.custom_args.no_short = custom_args
+
+        self.custom_args = custom_args
         """
         #assert df 
         # need deal price as essential and specified the df format
@@ -329,7 +330,7 @@ class trading_env:
                                                    self.reward_arr[:self.step_st+self.obs_len].cumsum(),
                                                    where=self.reward_arr[:self.step_st+self.obs_len].cumsum()<=0,
                                                    facecolor=(0, 1, 0, 0.2), edgecolor=(0, 1, 0, 0.9), linewidth=1, label = "reward_plot_n")
-        ax2.legend(framealpha=0.2, loc="center left")
+        self.ax2.legend(framealpha=0.2, loc="center left")
         trade_x = self.posi_variation_arr.nonzero()[0]
         trade_x_buy = [i for i in trade_x if self.posi_variation_arr[i]>0]
         trade_x_sell = [i for i in trade_x if self.posi_variation_arr[i]<0]
