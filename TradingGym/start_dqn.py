@@ -25,7 +25,7 @@ num_steps = 128
 save_interval  = 100
 print_interval = 5
 
-torch.save(hyperparams, "./DQN_logs_and_saves/hyperparams.pth")
+torch.save(hyperparams, "./DQN_with_fee_logs_and_saves/hyperparams.pth")
 
 df = pd.read_hdf('dataset/SGXTWsample.h5', 'STW')
 df.fillna(method='ffill', inplace=True)
@@ -33,7 +33,7 @@ df.fillna(method='ffill', inplace=True)
 def main():
 
     env = trading_env.make(custom_args = args , env_id='training_v1', obs_data_len=256, step_len=16,
-                           df=df, fee=0.0, max_position=5, deal_col_name='Price',
+                           df=df, fee=0.1, max_position=5, deal_col_name='Price',
                            feature_names=['Price', 'Volume',
                                           'Ask_price', 'Bid_price',
                                           'Ask_deal_vol', 'Bid_deal_vol',
@@ -70,12 +70,12 @@ def main():
         if n_epi % print_interval == 0 and n_epi != 0:
             print_str = "# of episode: {:d}, avg score: {:.4f}\n  Actions: {}".format(n_epi, sum(scores_list[-print_interval:]) / print_interval, np.array(actions))
             print(print_str)
-            with open("./DQN_logs_and_saves/output_log.txt", mode='a') as f:
+            with open("./DQN_with_fee_logs_and_saves/output_log.txt", mode='a') as f:
                 f.write(print_str + '\n')
 
         if n_epi % save_interval == 0:
-            torch.save(agent.qnetwork_local.state_dict(), './DQN_logs_and_saves/TradingGym_Rainbow_{:d}.pth'.format(n_epi))
-            torch.save(scores_list, './DQN_logs_and_saves/scores.pth')
+            torch.save(agent.qnetwork_local.state_dict(), './DQN_with_fee_logs_and_saves/TradingGym_Rainbow_{:d}.pth'.format(n_epi))
+            torch.save(scores_list, './DQN_with_fee_logs_and_saves/scores.pth')
 
     envs.close()
 

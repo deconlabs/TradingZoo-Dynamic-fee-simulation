@@ -14,7 +14,7 @@ args = argparser()
 #hyperparmeter
 device = torch.device("cpu")
 dqn_agent.set_device(device)
-load_weight_n = 700
+load_weight_n = 1300
 
 df = pd.read_hdf('dataset/SGXTWsample.h5', 'STW')
 
@@ -34,7 +34,7 @@ state = env.reset()
 env.render()
 
 agent = dqn_agent.Agent(action_size=3, num_features=16, **hyperparams)
-agent.qnetwork_local.load_state_dict(torch.load('./DQN_logs_and_saves/TradingGym_rainbow_{:d}.pth'.format(load_weight_n), map_location=device))
+agent.qnetwork_local.load_state_dict(torch.load('./DQN_with_fee_logs_and_saves/TradingGym_rainbow_{:d}.pth'.format(load_weight_n), map_location=device))
 agent.qnetwork_local.to(device)
 agent.qnetwork_local.eval()
 
