@@ -17,6 +17,7 @@ class trading_env:
                  return_transaction=True,
                  fluc_div=100.0, gameover_limit=5,
                  *args, **kwargs):
+        self.custom_args.no_short = custom_args
         """
         #assert df 
         # need deal price as essential and specified the df format
@@ -244,9 +245,12 @@ class trading_env:
             self._long(open_posi, enter_price, current_mkt_position, current_price_mean)
         
         elif action == 2 and -self.max_position < current_mkt_position <= 0:
-            open_posi = (current_mkt_position == 0)
-            self._short(open_posi, enter_price, current_mkt_position, current_price_mean)
-        
+            if self.custom_args.no_short:
+                action = 0
+            else:
+                open_posi = (current_mkt_position == 0)
+                self._short(open_posi, enter_price, current_mkt_position, current_price_mean)
+
         elif action == 1 and current_mkt_position<0:
             self._short_cover(current_price_mean, current_mkt_position)
 
@@ -307,25 +311,25 @@ class trading_env:
                             )     # remove background)
         self.fluc_reward_plot_p = self.ax2.fill_between(price_x, 0, self.reward_fluctuant_arr[:self.step_st+self.obs_len],
                                                         where=self.reward_fluctuant_arr[:self.step_st+self.obs_len]>=0, 
-                                                        facecolor=(1, 0.8, 0, 0.2), edgecolor=(1, 0.8, 0, 0.9), linewidth=0.8)
+                                                        facecolor=(1, 0.8, 0, 0.2), edgecolor=(1, 0.8, 0, 0.9), linewidth=0.8, label = "fluc_reward_plot_p")
         self.fluc_reward_plot_n = self.ax2.fill_between(price_x, 0, self.reward_fluctuant_arr[:self.step_st+self.obs_len],
                                                         where=self.reward_fluctuant_arr[:self.step_st+self.obs_len]<=0, 
-                                                        facecolor=(0, 1, 0.8, 0.2), edgecolor=(0, 1, 0.8, 0.9), linewidth=0.8)
+                                                        facecolor=(0, 1, 0.8, 0.2), edgecolor=(0, 1, 0.8, 0.9), linewidth=0.8, label = "fluc_reward_plot_n")
         self.posi_plot_long = self.ax2.fill_between(price_x, 0, self.posi_arr[:self.step_st+self.obs_len], 
                                                     where=self.posi_arr[:self.step_st+self.obs_len]>=0, 
-                                                    facecolor=(1, 0.5, 0, 0.2), edgecolor=(1, 0.5, 0, 0.9), linewidth=1)
+                                                    facecolor=(1, 0.5, 0, 0.2), edgecolor=(1, 0.5, 0, 0.9), linewidth=1, label = "posi_plot_long")
         self.posi_plot_short = self.ax2.fill_between(price_x, 0, self.posi_arr[:self.step_st+self.obs_len], 
                                                      where=self.posi_arr[:self.step_st+self.obs_len]<=0, 
-                                                     facecolor=(0, 0.5, 1, 0.2), edgecolor=(0, 0.5, 1, 0.9), linewidth=1)
+                                                     facecolor=(0, 0.5, 1, 0.2), edgecolor=(0, 0.5, 1, 0.9), linewidth=1, label = "posi_plot_short")
         self.reward_plot_p = self.ax2.fill_between(price_x, 0, 
                                                    self.reward_arr[:self.step_st+self.obs_len].cumsum(),
                                                    where=self.reward_arr[:self.step_st+self.obs_len].cumsum()>=0,
-                                                   facecolor=(1, 0, 0, 0.2), edgecolor=(1, 0, 0, 0.9), linewidth=1)
+                                                   facecolor=(1, 0, 0, 0.2), edgecolor=(1, 0, 0, 0.9), linewidth=1, label = "reward_plot_p")
         self.reward_plot_n = self.ax2.fill_between(price_x, 0, 
                                                    self.reward_arr[:self.step_st+self.obs_len].cumsum(),
                                                    where=self.reward_arr[:self.step_st+self.obs_len].cumsum()<=0,
-                                                   facecolor=(0, 1, 0, 0.2), edgecolor=(0, 1, 0, 0.9), linewidth=1)
-
+                                                   facecolor=(0, 1, 0, 0.2), edgecolor=(0, 1, 0, 0.9), linewidth=1, label = "reward_plot_n")
+        ax2.legend()
         trade_x = self.posi_variation_arr.nonzero()[0]
         trade_x_buy = [i for i in trade_x if self.posi_variation_arr[i]>0]
         trade_x_sell = [i for i in trade_x if self.posi_variation_arr[i]<0]
