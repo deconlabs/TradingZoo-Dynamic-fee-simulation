@@ -329,7 +329,7 @@ class trading_env:
                                                    self.reward_arr[:self.step_st+self.obs_len].cumsum(),
                                                    where=self.reward_arr[:self.step_st+self.obs_len].cumsum()<=0,
                                                    facecolor=(0, 1, 0, 0.2), edgecolor=(0, 1, 0, 0.9), linewidth=1, label = "reward_plot_n")
-        ax2.legend()
+        ax2.legend(framealpha=0.2, loc="center left")
         trade_x = self.posi_variation_arr.nonzero()[0]
         trade_x_buy = [i for i in trade_x if self.posi_variation_arr[i]>0]
         trade_x_sell = [i for i in trade_x if self.posi_variation_arr[i]<0]
