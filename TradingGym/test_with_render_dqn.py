@@ -14,7 +14,7 @@ args = argparser()
 #hyperparmeter
 device = torch.device("cpu")
 dqn_agent.set_device(device)
-load_weight_n = 1300
+load_weight_n = 500
 
 df = pd.read_hdf('dataset/SGXTWsample.h5', 'STW')
 

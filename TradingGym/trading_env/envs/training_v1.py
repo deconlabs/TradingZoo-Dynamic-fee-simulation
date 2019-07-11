@@ -16,7 +16,7 @@ class trading_env:
                  return_transaction=True,
                  fluc_div=100.0, gameover_limit=5,
                  *args, **kwargs):
-        self.custom_args = custom_args.no_short
+        self.custom_args = custom_args
         """
         #assert df 
         # need deal price as essential and specified the df format
@@ -272,7 +272,8 @@ class trading_env:
         else:
             self.obs_return = self.obs_state
 
-        return self.obs_return, self.obs_reward.sum(), done, self.info
+#         return self.obs_return, self.obs_reward.sum(), done, self.info
+        return self.obs_return, self.obs_reward[-self.step_len], done, self.info
 
     def _gen_trade_color(self, ind, long_entry=(1, 0, 0, 0.5), long_cover=(1, 1, 1, 0.5), 
                          short_entry=(0, 1, 0, 0.5), short_cover=(1, 1, 1, 0.5)): 

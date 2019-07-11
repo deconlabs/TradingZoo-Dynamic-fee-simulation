@@ -2,6 +2,7 @@ import random
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from collections import deque
 
 import torch
 import torch.nn as nn
@@ -27,12 +28,15 @@ num_steps = 128
 beta = 0.4
 num_envs = 16
 
+obs_data_len = 256
+step_len     = 16
+
 df = pd.read_hdf('dataset/SGXTWsample.h5', 'STW')
 df.fillna(method='ffill', inplace=True)
 # df.Price = np.arange(len(df))*100.
 def make_env():
     def _thunk():
-        env = trading_env.make(custom_args= args, env_id='training_v1', obs_data_len=256, step_len=16,
+        env = trading_env.make(custom_args= args, env_id='training_v1', obs_data_len=obs_data_len, step_len=step_len,
                                df=df, fee=0.0, max_position=5, deal_col_name='Price',
                                feature_names=['Price', 'Volume',
                                               'Ask_price', 'Bid_price',
@@ -78,7 +82,7 @@ def main():
             del L
 
         
-        score = np.asarray(rewards).sum()
+        score = np.asarray(rewards).sum(axis=0).mean()
         scores_list.append(score)
         loss_list.append(loss)
 
