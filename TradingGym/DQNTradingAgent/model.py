@@ -76,7 +76,7 @@ class NoisyLinear(nn.Module):
 class QNetwork(nn.Module):
     """Actor (Policy) Model."""
 
-    def __init__(self, action_size, num_features=16, n_atoms=N_ATOMS, linear_type=LINEAR, initial_sigma=INIT_SIGMA, factorized=FACTORIZED):
+    def __init__(self, action_size, obs_len, num_features=16, n_atoms=N_ATOMS, linear_type=LINEAR, initial_sigma=INIT_SIGMA, factorized=FACTORIZED):
         """Initialize parameters and build model.
         Params
         ======
@@ -89,6 +89,7 @@ class QNetwork(nn.Module):
         """
         super(QNetwork, self).__init__()
         self.action_size = action_size
+        self.obs_len = obs_len
         self.num_features = num_features
         self.n_atoms = n_atoms
         self.linear_type = linear_type.lower()
@@ -100,11 +101,11 @@ class QNetwork(nn.Module):
 
         # Bottleneck idea from Google's MobileNetV2
 
-        # N * 256 * num_features
+        # N * obs_len * num_features
         # x.transpose(-1, -2).contiguous().unsqueeze(-1)
-        # N * num_features * 256 * 1
+        # N * num_features * obs_len * 1
         self.conv0 = nn.Sequential(
-            nn.LayerNorm([256, 1]),
+            nn.LayerNorm([obs_len, 1]),
             nn.Conv2d(num_features, num_features * 2, kernel_size=(3, 1), stride=(2, 1), padding=(1, 0)),
             nn.BatchNorm2d(num_features * 2)
         )
@@ -138,6 +139,7 @@ class QNetwork(nn.Module):
             nn.BatchNorm2d(512),
             nn.AvgPool2d(kernel_size=(8, 1))
         )
+        self.glb_avg_pool = nn.AvgPool2d(kernel_size=1)
         # N * 512 * 1 * 1
         # x.view(-1, 512)
         # N * 512
@@ -161,6 +163,8 @@ class QNetwork(nn.Module):
         x = self.bottleneck0(x)
         x = self.bottleneck1(x)
         x = self.conv1(x)
+        self.glb_avg_pool.kernel_size = self.glb_avg_pool.stride = tuple(x.shape[-2:])
+        x = self.glb_avg_pool(x)
         x = x.view(-1, 512)
 
         state_value = self.fc_s(x)

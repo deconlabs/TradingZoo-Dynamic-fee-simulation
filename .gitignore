@@ -1,2 +1,8 @@
 .vscode
+.ipynb_checkpoints
 no_subproc/
+TradingGym/DQN_logs_and_saves/
+TradingGym/DQN_long_with_fee_logs_and_saves/
+TradingGym/DQN_with_fee_logs_and_saves/
+TradingGym/__pycache__
+TradingGym/.ipynb_checkpoints

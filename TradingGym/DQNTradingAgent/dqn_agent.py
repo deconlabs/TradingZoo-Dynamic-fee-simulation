@@ -7,6 +7,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 from .model import QNetwork
+from .replay_buffer import ReplayBuffer
 from .default_hyperparameters import SEED, BUFFER_SIZE, BATCH_SIZE, START_SINCE,\
                                     GAMMA, T_UPDATE, TAU, LR, WEIGHT_DECAY, UPDATE_EVERY,\
                                     A, INIT_BETA, P_EPS, N_STEPS, V_MIN, V_MAX,\
@@ -21,7 +22,7 @@ def set_device(new_device):
 class Agent():
     """Interacts with and learns from the environment."""
 
-    def __init__(self, action_size, num_features=16, seed=SEED, batch_size=BATCH_SIZE,
+    def __init__(self, action_size, obs_len, num_features=16, seed=SEED, batch_size=BATCH_SIZE,
                  buffer_size=BUFFER_SIZE, start_since=START_SINCE, gamma=GAMMA, target_update_every=T_UPDATE,
                  tau=TAU, lr=LR, weight_decay=WEIGHT_DECAY, update_every=UPDATE_EVERY, priority_eps=P_EPS,
                  a=A, initial_beta=INIT_BETA, n_multisteps=N_STEPS,
@@ -32,6 +33,7 @@ class Agent():
         Params
         ======
             action_size (int): dimension of each action
+            obs_len(int)
             num_features (int): number of features in the state
             seed (int): random seed
             batch_size (int): size of each sample batch
@@ -59,6 +61,7 @@ class Agent():
             print("Ignored keyword arguments: ", end='')
             print(*kwds, sep=', ')
         assert isinstance(action_size, int)
+        assert isinstance(obs_len, int)
         assert isinstance(num_features, int)
         assert isinstance(seed, int)
         assert isinstance(batch_size, int) and batch_size > 0
@@ -87,6 +90,7 @@ class Agent():
         torch.cuda.manual_seed(seed)
 
         self.action_size         = action_size
+        self.obs_len             = obs_len
         self.num_features        = num_features
         self.seed                = seed
         self.batch_size          = batch_size
@@ -115,14 +119,14 @@ class Agent():
         self.delta_z  = (v_max - v_min) / (n_atoms - 1)
 
         # Q-Network
-        self.qnetwork_local  = QNetwork(action_size, num_features, n_atoms, linear_type, initial_sigma, factorized).to(device)
-        self.qnetwork_target = QNetwork(action_size, num_features, n_atoms, linear_type, initial_sigma, factorized).to(device)
+        self.qnetwork_local  = QNetwork(action_size, obs_len, num_features, n_atoms, linear_type, initial_sigma, factorized).to(device)
+        self.qnetwork_target = QNetwork(action_size, obs_len, num_features, n_atoms, linear_type, initial_sigma, factorized).to(device)
         self.qnetwork_target.load_state_dict(self.qnetwork_local.state_dict())
 
         self.optimizer = optim.Adam(self.qnetwork_local.parameters(), lr=lr, weight_decay=weight_decay)
 
         # Replay memory
-        self.memory = ReplayBuffer(action_size, buffer_size, batch_size, n_multisteps, gamma, a)
+        self.memory = ReplayBuffer(1, buffer_size, batch_size, n_multisteps, gamma, a, False)
         # Initialize time step (for updating every UPDATE_EVERY steps and TARGET_UPDATE_EVERY steps)
         self.u_step = 0
         self.t_step = 0
@@ -260,101 +264,3 @@ class Agent():
     def to(self, device):
         self.qnetwork_local  = self.qnetwork_local.to(device)
         self.qnetwork_target = self.qnetwork_target.to(device)
-
-
-class ReplayBuffer:
-    """Fixed-size buffer to store experience tuples."""
-
-    def __init__(self, action_size, buffer_size, batch_size, n_multisteps, gamma, a):
-        """Initialize a ReplayBuffer object.
-
-        Params
-        ======
-            action_size (int): dimension of each action
-            buffer_size (int): maximum size of buffer
-            batch_size (int): size of each training batch
-            n_multisteps (int): number of time steps to consider for each experience
-            gamma (float): discount factor
-            a (float): priority exponent parameter
-        """
-        self.action_size = action_size
-        self.buffer_size = buffer_size
-        self.batch_size = batch_size
-        self.n_multisteps = n_multisteps
-        self.gamma = gamma
-        self.a = a
-        self.memory = deque(maxlen=buffer_size)
-        self.priorities_a = deque(maxlen=buffer_size)
-        self.multistep_collector = deque(maxlen=n_multisteps)
-        self.max_priority_a = 1.
-        self.experience = namedtuple("Experience", field_names=["state", "action", "reward", "next_state", "done"])
-
-    def add(self, state, action, reward, next_state, done):
-        """Add a new experience to memory."""
-        e = self.experience(state, action, reward, next_state, done)
-        self.multistep_collector.append(e)
-        if len(self.multistep_collector) == self.n_multisteps:
-            self.memory.append(tuple(self.multistep_collector))
-            self.priorities_a.append(self.max_priority_a)
-        if done:
-            self.multistep_collector.clear()
-
-    def sample(self, beta):
-        """Randomly sample a batch of experiences from memory.
-
-        Params
-        ======
-            beta (int or float): parameter used for calculating importance-priority weights
-
-        Returns
-        =======
-            experiences (Tuple[torch.Tensor]): tuple of (s, a, r, s', done) tuples
-            target_discount (float): discount factor for target max-Q value
-            is_weights (torch.Tensor): tensor of importance-sampling weights
-            indices (np.ndarray): sample indices"""
-        probs = np.divide(self.priorities_a, sum(self.priorities_a))
-
-        indices = np.random.choice(len(self.memory), size=self.batch_size, replace=False, p=probs)
-
-        discounts = np.power(self.gamma, np.arange(self.n_multisteps + 1))
-        target_discount = float(discounts[-1])
-
-        experiences = tuple(zip(*[self.memory[i] for i in indices if self.memory[i] is not None]))
-
-
-        first_states = torch.from_numpy(np.array([e[0] for e in experiences[0]])).float().to(device)
-        actions = torch.from_numpy(np.array([e[1] for e in experiences[0]]).reshape((-1, 1))).long().to(device)
-        rewards = torch.from_numpy(
-                      np.sum(
-                          np.multiply(
-                              np.array([[e[2] for e in experiences_step] for experiences_step in experiences]).transpose(), discounts[:-1]
-                          ), axis=1, keepdims=True
-                      )
-                  ).float().to(device)
-        last_states = torch.from_numpy(np.array([e[3] for e in experiences[-1]])).float().to(device)
-        dones = torch.from_numpy(np.array([e[4] for e in experiences[-1]], dtype=np.uint8).reshape((-1, 1))).float().to(device)
-
-        is_weights = [probs[i] for i in indices if self.memory[i] is not None]
-        is_weights = np.power(np.multiply(is_weights, len(self.memory)), -beta)
-        is_weights = torch.from_numpy(np.divide(is_weights, max(is_weights)).reshape((-1, 1))).float().to(device)
-
-        return (first_states, actions, rewards, last_states, dones), target_discount, is_weights, indices
-
-    def update_priorities(self, indices, new_priorities):
-        """Update the priorities for the experiences of given indices to the given new values.
-
-        Params
-        ======
-            indices (array_like): indices of experience priorities to update
-            new_priorities (array-like): new priority values for given indices"""
-        new_priorities_a = np.power(new_priorities, self.a)
-        for i, new_priority_a in zip(indices, new_priorities_a):
-            self.priorities_a[i] = float(new_priority_a)
-        self.max_priority_a = max(self.priorities_a)
-
-    def reset_multisteps(self):
-        self.multistep_collector.clear()
-
-    def __len__(self):
-        """Return the current size of internal memory."""
-        return len(self.memory)
