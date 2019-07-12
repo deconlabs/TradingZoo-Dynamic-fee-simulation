@@ -11,7 +11,7 @@ from colour import Color
 
 class TradingEnv:
     def __init__(self, custom_args, env_id, obs_data_len, step_len,
-                 df, fee, initial_budget, deal_col_name='price', 
+                 df, fee, initial_budget, n_action_intervals, deal_col_name='price', 
                  feature_names=['price', 'volume'], 
                  return_transaction=True,
                  fluc_div=100.0, gameover_limit=5,
@@ -25,11 +25,16 @@ class TradingEnv:
             # datetime
             # serial_number -> serial num of deal at each day recalculating
             
-        # fee -> when each deal will pay the fee, set with your product
+        # fee -> Proportion of price to pay as fee when buying assets;
+                 (e.g. 0.5 = 50%, 0.01 = 1%)
+        # initial_budget -> The amount of budget to begin with
+        # n_action_intervals -> Number of actions for Buy and Sell actions;
+                                 The total number of actions is `n_action_intervals` * 2 + 1
         # deal_col_name -> the column name for cucalate reward used.
         # feature_names -> list contain the feature columns to use in trading status.
         # ?day trade option set as default if don't use this need modify
         """
+        assert 0 <= fee <= 1, "fee must be between 0 and 1 (0% to 100%)"
         assert deal_col_name in df.columns, "deal_col not in Dataframe please define the correct column name of which column want to calculate the profit."
         assert 'serial_number' in df.columns, "need serial_number columns to know where the day start."
         for col in feature_names:
@@ -43,11 +48,16 @@ class TradingEnv:
         
         self.df = df
 
-        self.action_space = 3
-        self.action_describe = {0:'do nothing',
-                                1:'long',
-                                2:'short'}
-        
+        self.n_action_intervals = n_action_intervals
+        self.action_space = 2 * n_action_intervals + 1
+        self.hold_action = n_action_intervals
+
+        act_desc_pairs = [(n_action_intervals, "Hold")]
+        for i in range(n_action_intervals):
+            act_desc_pairs.append((i, "Buy with {:.2f}% of current budget".format((i + 1) / n_action_intervals * 100)))
+            act_desc_pairs.append((n_action_intervals + i + 1, "Sell {:.2f}% of current assets".format((i + 1) / n_action_intervals * 100)))
+        self.action_describe = {i:s for i, s in sorted(act_desc_pairs, key=lambda x: x[0])}
+
         self.obs_len = obs_data_len
         self.feature_len = len(feature_names)
         self.observation_space = np.array([self.obs_len*self.feature_len,])
@@ -134,7 +144,8 @@ class TradingEnv:
     
 
     def _long(self, open_posi, enter_price, current_mkt_position, current_price_mean, action): # Used once in `step()`
-        # betting_rate = (action +1) / 10
+        enter_price = (1 + self.fee) * enter_price
+        # betting_rate = (action +1) / self.n_action_intervals
         # n_stock = self.budget * betting_rate / enter_price # 주문할 주식 수
         n_stock = min(action + 1, self.budget // enter_price)
         self.budget -= enter_price * n_stock
@@ -153,12 +164,12 @@ class TradingEnv:
     
     def _long_cover(self, current_price_mean, current_mkt_position, action): # Used once in `step()`
         # n_stock = (보유주식 개수) * (비율(액션))
-        n_stock = min(action - 10 , current_mkt_position)
+        n_stock = min(action - self.hold_action, current_mkt_position)
         self.budget += self.chg_price[0] * n_stock
         self.chg_price_mean[:] = current_price_mean
         self.chg_posi[:] = current_mkt_position - n_stock
         self.chg_makereal[:1] = 1
-        self.chg_reward[:] = ((self.chg_price - self.chg_price_mean)*(n_stock) - self.fee)*self.chg_makereal
+        self.chg_reward[:] = ((self.chg_price - self.chg_price_mean) * n_stock) * self.chg_makereal
         self.chg_posi_var[:1] = -n_stock
         self.chg_posi_entry_cover[:1] = -1
     
@@ -225,25 +236,24 @@ class TradingEnv:
 # self.actions = [-1, -0.9, -0.8, ... , -0.1, 0, 0.1, ... , 0.8, 0.9, 1]
 
         enter_price = self.chg_price[0]
-        # self.hold_action = 10
-        if action < 10 : # If `Buy`
+        if action < self.hold_action : # If `Buy`
             if self.budget < enter_price: # If not enough budget
-                action = 10
+                action = self.hold_action
             else:
                 open_posi = (current_mkt_position == 0)
                 self._long(open_posi, enter_price, current_mkt_position, current_price_mean, action)
 
-        elif 10 < action <= 20 and current_mkt_position > 0: # If `Sell` and `Has Asset`
+        elif (self.hold_action < action <= self.hold_action + self.n_action_intervals) and (current_mkt_position > 0): # If `Sell` and `Has Asset`
             self._long_cover(current_price_mean, current_mkt_position, action)
 
-        elif 10 < action <= 20 and current_mkt_position == 0: # If `Sell` and `No Asset`
-            action = 0
+        elif (self.hold_action < action <= self.hold_action + self.n_action_intervals) and (current_mkt_position == 0): # If `Sell` and `No Asset`
+            action = self.hold_action
         
-        if action == 10: # If `Hold`
+        if action == self.hold_action: # If `Hold`
             if current_mkt_position != 0:
                 self._stayon(current_price_mean, current_mkt_position)
 
-        self.chg_reward_fluctuant[:] = (self.chg_price - self.chg_price_mean)*self.chg_posi - np.abs(self.chg_posi)*self.fee
+        self.chg_reward_fluctuant[:] = (self.chg_price - self.chg_price_mean) * self.chg_posi
 
         if self.return_transaction:
             self.obs_return = np.concatenate((self.obs_state, 
