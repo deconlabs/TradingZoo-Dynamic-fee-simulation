@@ -136,7 +136,8 @@ class TradingEnv:
     def _long(self, open_posi, enter_price, current_mkt_position, current_price_mean, action): # Used once in `step()`
         # betting_rate = (action +1) / 10
         # n_stock = self.budget * betting_rate / enter_price # 주문할 주식 수
-        n_stock = action + 1
+        n_stock = min(action + 1, self.budget // enter_price)
+        self.budget -= enter_price * n_stock
         if open_posi:
             self.chg_price_mean[:] = enter_price
             self.chg_posi[:] = n_stock
@@ -145,14 +146,15 @@ class TradingEnv:
         else:
             after_act_mkt_position = current_mkt_position + n_stock
             self.chg_price_mean[:] = (current_price_mean*current_mkt_position + \
-                                        enter_price)/after_act_mkt_position
+                                        enter_price * n_stock)/after_act_mkt_position
             self.chg_posi[:] = after_act_mkt_position
             self.chg_posi_var[:1] = n_stock
             self.chg_posi_entry_cover[:1] = 2
     
     def _long_cover(self, current_price_mean, current_mkt_position, action): # Used once in `step()`
         # n_stock = (보유주식 개수) * (비율(액션))
-        n_stock = min( action - 10 , current_mkt_position)
+        n_stock = min(action - 10 , current_mkt_position)
+        self.budget += self.chg_price[0] * n_stock
         self.chg_price_mean[:] = current_price_mean
         self.chg_posi[:] = current_mkt_position - n_stock
         self.chg_makereal[:1] = 1
@@ -223,22 +225,21 @@ class TradingEnv:
 # self.actions = [-1, -0.9, -0.8, ... , -0.1, 0, 0.1, ... , 0.8, 0.9, 1]
 
         enter_price = self.chg_price[0]
-        if action < self.hold_action : # If `Buy`
+        # self.hold_action = 10
+        if action < 10 : # If `Buy`
             if self.budget < enter_price: # If not enough budget
                 action = 10
             else:
                 open_posi = (current_mkt_position == 0)
-                self._long(open_posi, enter_price, current_mkt_position, current_price_mean, action )
-                self.budget -= enter_price # 지금은 간단하게 하고 있지만 나중에는 복수 매수 & 수수료 고려해서 _long() 내부에서 처리하는게 좋을듯
+                self._long(open_posi, enter_price, current_mkt_position, current_price_mean, action)
 
-        elif action == 2 and current_mkt_position > 0: # If `Sell` and `Has Asset`
-            self._long_cover(current_price_mean, current_mkt_position)
-            self.budget += enter_price # 이것도 간단하지만 나중에 복수 매도 & 수수료 고려하여 _long_cover() 내에서 처리하는것을 권장
+        elif 10 < action <= 20 and current_mkt_position > 0: # If `Sell` and `Has Asset`
+            self._long_cover(current_price_mean, current_mkt_position, action)
 
-        elif action == 2 and current_mkt_position == 0: # If `Sell` and `No Asset`
+        elif 10 < action <= 20 and current_mkt_position == 0: # If `Sell` and `No Asset`
             action = 0
         
-        if action == 0: # If `Hold`
+        if action == 10: # If `Hold`
             if current_mkt_position != 0:
                 self._stayon(current_price_mean, current_mkt_position)
 
