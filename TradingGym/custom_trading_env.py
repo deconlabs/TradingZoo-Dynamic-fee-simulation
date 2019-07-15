@@ -10,9 +10,9 @@ import matplotlib.patches as patches
 from colour import Color
 
 class TradingEnv:
-    def __init__(self, custom_args, env_id, obs_data_len, step_len,
-                 df, fee, initial_budget, n_action_intervals, deal_col_name='price', 
-                 feature_names=['price', 'volume'], 
+    def __init__(self, custom_args, env_id, obs_data_len, step_len, sample_len,
+                 df, fee, initial_budget, n_action_intervals, deal_col_name='c', 
+                 feature_names=['c', 'v'], 
                  return_transaction=True,
                  fluc_div=100.0, gameover_limit=5,
                  *args, **kwargs):
@@ -20,6 +20,7 @@ class TradingEnv:
         # need deal price as essential and specified the df format
         # obs_data_leng -> observation data length
         # step_len -> when call step rolling windows will + step_len
+        # sample_len -> length of each sample
         # df -> dataframe that contain data for trading(format as...)
             # price 
             # datetime
@@ -36,7 +37,6 @@ class TradingEnv:
         """
         assert 0 <= fee <= 1, "fee must be between 0 and 1 (0% to 100%)"
         assert deal_col_name in df.columns, "deal_col not in Dataframe please define the correct column name of which column want to calculate the profit."
-        assert 'serial_number' in df.columns, "need serial_number columns to know where the day start."
         for col in feature_names:
             assert col in df.columns, "feature name: {} not in Dataframe.".format(col)
 
@@ -56,26 +56,26 @@ class TradingEnv:
         for i in range(n_action_intervals):
             act_desc_pairs.append((i, "Buy with {:.2f}% of current budget".format((i + 1) / n_action_intervals * 100)))
             act_desc_pairs.append((n_action_intervals + i + 1, "Sell {:.2f}% of current assets".format((i + 1) / n_action_intervals * 100)))
-        self.action_describe = {i:s for i, s in sorted(act_desc_pairs, key=lambda x: x[0])}
+        act_desc_pairs.sort(key=lambda x: x[0])
+        self.action_describe = {i:s for i, s in act_desc_pairs}
 
         self.obs_len = obs_data_len
         self.feature_len = len(feature_names)
         self.observation_space = np.array([self.obs_len*self.feature_len,])
         self.using_feature = feature_names
         self.price_name = deal_col_name
-        
+
         self.step_len = step_len
         self.fee = fee
 
+        self.sample_len = sample_len
+
         self.budget = initial_budget
-        
+
         self.fluc_div = fluc_div
         self.gameover = gameover_limit  #todo : 이게 뭘까
         self.return_transaction = return_transaction
-        
-        self.begin_fs = self.df[self.df['serial_number']==0]
-        self.date_leng = len(self.begin_fs)  # 이게 뭘까
-        
+
         self.render_on = 0
         self.buy_color, self.sell_color = (1, 2)
         self.new_rotation, self.cover_rotation = (1, 2)
@@ -93,7 +93,7 @@ class TradingEnv:
         return df_section
 
     def reset(self): # prepares various state components
-        self.df_sample = self._random_choice_section()
+        self.df_sample = self._random_choice_section(self.sample_len)
         self.step_st = 0
         # define the price to calculate the reward
         self.price = self.df_sample[self.price_name].as_matrix()
