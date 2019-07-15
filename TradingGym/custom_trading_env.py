@@ -171,7 +171,7 @@ class TradingEnv:
         self.chg_price_mean[:] = current_price_mean
         self.chg_posi[:] = current_mkt_position - n_stock
         self.chg_makereal[:1] = 1
-        self.chg_reward[:] = ((self.chg_price - self.chg_price_mean) * n_stock) * self.chg_makereal
+        self.chg_reward[:] = ((self.chg_price - self.chg_price_mean) * n_stock) * self.chg_makereal / self.initial_budget
         self.chg_posi_var[:1] = -n_stock
         self.chg_posi_entry_cover[:1] = -1
 
@@ -219,8 +219,7 @@ class TradingEnv:
                 self.chg_posi_entry_cover[:1] = -2
                 self.chg_makereal[:1] = 1
                 self.budget += self.chg_price[0] * current_mkt_position
-                self.chg_reward[:] = ((self.chg_price - self.chg_price_mean) * (current_mkt_position) - abs(
-                    current_mkt_position) * self.fee) * self.chg_makereal
+                self.chg_reward[:] = ((self.chg_price - self.chg_price_mean) * current_mkt_position / self.initial_budget
             self.transaction_details = pd.DataFrame([self.posi_arr,
                                                      self.posi_variation_arr,
                                                      self.posi_entry_cover_arr,
@@ -259,7 +258,7 @@ class TradingEnv:
             if current_mkt_position != 0:
                 self._stayon(current_price_mean, current_mkt_position)
 
-        self.chg_reward_fluctuant[:] = (self.chg_price - self.chg_price_mean) * self.chg_posi
+        self.chg_reward_fluctuant[:] = (self.chg_price - self.chg_price_mean) * self.chg_posi / self.initial_budget
 
         if self.return_transaction:
             self.obs_return = np.concatenate((self.obs_state,
