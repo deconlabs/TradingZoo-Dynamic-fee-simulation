@@ -26,7 +26,7 @@ save_location = './custom_saves'
 # num_steps = 128
 
 save_interval  = 100
-print_interval = 5
+print_interval = 1
 
 sample_len   = 4096
 obs_data_len = 256

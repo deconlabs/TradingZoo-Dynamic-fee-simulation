@@ -229,7 +229,6 @@ class Agent():
             """
 
         pred_distributions = self.qnetwork_local(states)
-        raise Exception(actions.view(-1, 1, 1).expand(-1, -1, pred_distributions.size(2)).shape)
         pred_distributions = pred_distributions.gather(dim=1, index=actions.view(-1, 1, 1).expand(-1, -1, pred_distributions.size(2))).squeeze(1)
 
         """

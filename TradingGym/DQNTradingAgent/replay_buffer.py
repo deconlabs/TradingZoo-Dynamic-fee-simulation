@@ -108,7 +108,7 @@ class ReplayBuffer:
         experiences = tuple(zip(*[self.memory[i] for i in indices if self.memory[i] is not None]))
 
         first_states = torch.tensor([e[0] for e in experiences[0]], dtype=torch.float, device=device)
-        actions      = torch.tensor([e[1] for e in experiences[0]], dtype=torch.float, device=device)
+        actions      = torch.tensor([e[1] for e in experiences[0]], dtype=torch.long, device=device)
         rewards      = torch.tensor(
                            np.sum(
                                np.multiply(

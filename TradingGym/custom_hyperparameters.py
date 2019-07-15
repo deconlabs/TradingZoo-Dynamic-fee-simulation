@@ -2,7 +2,7 @@ hyperparams = {
     'seed':                101,     # random seed
     'buffer_size':         100000,  # size of the experience replay buffer
     'batch_size':          64,      # number of experiences to sample at each learning step
-    'start_since':         128,    # number of experiences to store before it begins learning (must be >= 'batch_size')
+    'start_since':         3000,    # number of experiences to store before it begins learning (must be >= 'batch_size')
     'gamma':               0.995,   # discount factor
     'target_update_every': 1,       # how often to update the target network
     'tau':                 1e-3,    # how much to update the target network at every update
