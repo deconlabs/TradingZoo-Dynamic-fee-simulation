@@ -83,17 +83,13 @@ class TradingEnv:
         self.logger.info('Making new env: {}'.format(env_id))
     
     def _random_choice_section(self): # todo : 마치 배치 뽑는거 같은건가?
-        random_int = np.random.randint(self.date_leng)
-        if random_int == self.date_leng - 1:
-            begin_point = self.begin_fs.index[random_int]
-            end_point = None
-        else:
-            begin_point, end_point = self.begin_fs.index[random_int: random_int+2]
+        begin_point = np.random.randint(len(self.df) - self.sample_len + 1)
+        end_point   = begin_point + self.sample_len
         df_section = self.df.iloc[begin_point: end_point]
         return df_section
 
     def reset(self): # prepares various state components
-        self.df_sample = self._random_choice_section(self.sample_len)
+        self.df_sample = self._random_choice_section()
         self.step_st = 0
         # define the price to calculate the reward
         self.price = self.df_sample[self.price_name].as_matrix()
@@ -145,9 +141,11 @@ class TradingEnv:
 
     def _long(self, open_posi, enter_price, current_mkt_position, current_price_mean, action): # Used once in `step()`
         enter_price = (1 + self.fee) * enter_price
-        # betting_rate = (action +1) / self.n_action_intervals
-        # n_stock = self.budget * betting_rate / enter_price # 주문할 주식 수
-        n_stock = min(action + 1, self.budget // enter_price)
+        betting_rate = (action + 1) / self.n_action_intervals
+        n_stock = round(self.budget * betting_rate / enter_price) # 주문할 주식 수
+        if enter_price * n_stock > self.budget: # 반올림한 값이 현 보유자산을 초과할 경우 1개 적게 구입
+            n_stock -= 1
+        # n_stock = min(action + 1, self.budget // enter_price)
         self.budget -= enter_price * n_stock
         if open_posi:
             self.chg_price_mean[:] = enter_price
@@ -164,6 +162,7 @@ class TradingEnv:
     
     def _long_cover(self, current_price_mean, current_mkt_position, action): # Used once in `step()`
         # n_stock = (보유주식 개수) * (비율(액션))
+        n_stock = current_mkt_position
         n_stock = min(action - self.hold_action, current_mkt_position)
         self.budget += self.chg_price[0] * n_stock
         self.chg_price_mean[:] = current_price_mean
