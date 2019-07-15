@@ -3,7 +3,11 @@ import numpy as np
 import torch
 from collections import deque, namedtuple
 
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cpu')
+
+def rp_set_device(new_device):
+    global device
+    device = new_device
 
 class ReplayBuffer:
     """Fixed-size buffer to store experience tuples."""

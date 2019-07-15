@@ -7,7 +7,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 from .model import QNetwork
-from .replay_buffer import ReplayBuffer
+from .replay_buffer import ReplayBuffer, rp_set_device
 from .default_hyperparameters import SEED, BUFFER_SIZE, BATCH_SIZE, START_SINCE,\
                                     GAMMA, T_UPDATE, TAU, LR, WEIGHT_DECAY, UPDATE_EVERY,\
                                     A, INIT_BETA, P_EPS, N_STEPS, V_MIN, V_MAX,\
@@ -18,6 +18,7 @@ device = torch.device("cpu")
 def set_device(new_device):
     global device
     device = new_device
+    rp_set_device(new_device)
 
 class Agent():
     """Interacts with and learns from the environment."""
@@ -228,7 +229,8 @@ class Agent():
             """
 
         pred_distributions = self.qnetwork_local(states)
-        pred_distributions = pred_distributions.gather(dim=1, index=actions.unsqueeze(1).expand(-1, -1, pred_distributions.size(2))).squeeze(1)
+        raise Exception(actions.view(-1, 1, 1).expand(-1, -1, pred_distributions.size(2)).shape)
+        pred_distributions = pred_distributions.gather(dim=1, index=actions.view(-1, 1, 1).expand(-1, -1, pred_distributions.size(2))).squeeze(1)
 
         """
         cross_entropy = target_distributions.mul(pred_distributions.exp().sum(dim=-1, keepdim=True).log() - pred_distributions).sum(dim=-1, keepdim=False)

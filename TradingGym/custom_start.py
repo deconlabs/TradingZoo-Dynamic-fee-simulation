@@ -10,10 +10,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-import trading_env
+from custom_trading_env import TradingEnv
 from utils import device
 import DQNTradingAgent.dqn_agent as dqn_agent
-from hyperparameters import hyperparams
+from custom_hyperparameters import hyperparams
 from arguments import argparser
 
 args = argparser()
@@ -23,13 +23,18 @@ dqn_agent.set_device(device)
 save_location = './custom_saves'
 
 # Hyperparameters
-num_steps = 128
+# num_steps = 128
 
 save_interval  = 100
 print_interval = 5
 
+sample_len   = 4096
 obs_data_len = 256
-step_len     = 64
+step_len     = 16
+
+n_action_intervals = 10
+
+init_budget = 1
 
 # _persist_period = (obs_data_len // step_len) + int(obs_data_len % step_len != 0)
 
@@ -40,11 +45,15 @@ df.fillna(method='ffill', inplace=True)
 
 def main():
 
-    env = trading_env.make(custom_args = args , env_id='custom_trading_env', obs_data_len=obs_data_len, step_len=step_len,
-                           df=df, fee=0.1, max_position=5, deal_col_name='c',
-                           feature_names=['o', 'h,','l','c','v',
+    env = TradingEnv(custom_args=args, env_id='custom_trading_env', obs_data_len=obs_data_len, step_len=step_len, sample_len=sample_len,
+                           df=df, fee=0.001, initial_budget=1, n_action_intervals=n_action_intervals, deal_col_name='c',
+                           feature_names=['o', 'h','l','c','v',
                                           'num_trades', 'taker_base_vol'])
-    agent = dqn_agent.Agent(action_size=3, obs_len=obs_data_len, num_features=16, **hyperparams)
+    agent = dqn_agent.Agent(action_size=2 * n_action_intervals + 1, obs_len=obs_data_len, num_features=env.reset().shape[-1], **hyperparams)
+
+    beta = 0.4
+    beta_inc = (1 - beta) / 1000
+    agent.beta = beta
 
     scores_list = []
     loss_list = []
@@ -59,7 +68,8 @@ def main():
         rewards = []
 #         _reward_deque = deque(maxlen=_persist_period)
 
-        for t in range(num_steps):
+        # for t in range(num_steps):
+        while True:
             action = int(agent.act(state, eps=0.))
             actions.append(action)
             next_state, reward, done, _ = env.step(action)
@@ -76,6 +86,9 @@ def main():
                 break
         else:
             agent.memory.reset_multisteps()
+
+        beta = min(1, beta + beta_inc)
+        agent.beta = beta
 
         scores_list.append(score)
 
