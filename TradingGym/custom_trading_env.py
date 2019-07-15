@@ -70,7 +70,8 @@ class TradingEnv:
 
         self.sample_len = sample_len
 
-        self.budget = initial_budget
+        self.initial_budget = initial_budget
+        self.budget         = initial_budget
 
         self.fluc_div = fluc_div
         self.gameover = gameover_limit  #todo : 이게 뭘까
@@ -107,6 +108,8 @@ class TradingEnv:
         self.reward_fluctuant_arr = (self.price - self.price_mean_arr)*self.posi_arr # 현재가 - 보유단가 ; 미실현 손익으로 추정함
         self.reward_makereal_arr = self.posi_arr.copy() # bool 로 추정함. 실제 주식처분했는지 아닌지
         self.reward_arr = self.reward_fluctuant_arr*self.reward_makereal_arr # (현재가 - 보유단가) * 팔았는지 안팔았는지
+
+        self.budget = self.initial_budget
 
         self.info = None
         self.transaction_details = pd.DataFrame()
@@ -162,8 +165,8 @@ class TradingEnv:
     
     def _long_cover(self, current_price_mean, current_mkt_position, action): # Used once in `step()`
         # n_stock = (보유주식 개수) * (비율(액션))
-        n_stock = current_mkt_position
-        n_stock = min(action - self.hold_action, current_mkt_position)
+        n_stock = round(current_mkt_position * (action - 10) / self.n_action_intervals)
+        # n_stock = min(action - self.hold_action, current_mkt_position)
         self.budget += self.chg_price[0] * n_stock
         self.chg_price_mean[:] = current_price_mean
         self.chg_posi[:] = current_mkt_position - n_stock
@@ -215,6 +218,7 @@ class TradingEnv:
                 self.chg_posi_var[:1] = -current_mkt_position
                 self.chg_posi_entry_cover[:1] = -2
                 self.chg_makereal[:1] = 1
+                self.budget += self.chg_price[0] * current_mkt_position
                 self.chg_reward[:] = ((self.chg_price - self.chg_price_mean)*(current_mkt_position) - abs(current_mkt_position)*self.fee)*self.chg_makereal
             self.transaction_details = pd.DataFrame([self.posi_arr,
                                                      self.posi_variation_arr,
