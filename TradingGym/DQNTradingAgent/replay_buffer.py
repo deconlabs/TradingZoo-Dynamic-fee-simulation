@@ -8,12 +8,11 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 class ReplayBuffer:
     """Fixed-size buffer to store experience tuples."""
 
-    def __init__(self, n_agents, buffer_size, batch_size, n_multisteps, gamma, a, separate_experiences):
+    def __init__(self, buffer_size, batch_size, n_multisteps, gamma, a, separate_experiences):
         """Initialize a ReplayBuffer object.
 
         Params
         ======
-            n_agents (int): number of agents, or simulations, running simultaneously
             buffer_size (int): maximum size of buffer
             batch_size (int): size of each training batch
             n_multisteps (int): number of time steps to consider for each experience
@@ -21,7 +20,6 @@ class ReplayBuffer:
             a (float): priority exponent parameter
             separate_experiences (bool): whether to store experiences with no overlap
         """
-        self.n_agents = n_agents
         self.buffer_size = buffer_size
         self.batch_size = batch_size
         self.n_multisteps = n_multisteps
@@ -37,7 +35,7 @@ class ReplayBuffer:
         self.priorities_a = np.zeros(buffer_size)
         self.tree = np.zeros(self._memory_start_idx + buffer_size) # starts from index 1, not 0; makes implementation easier and reduces many small computations
 
-        self.multistep_collectors = [deque(maxlen=n_multisteps) for _ in range(n_agents)]
+        self.multistep_collector = deque(maxlen=n_multisteps)
         self.max_priority_a = 1.
         self.experience = namedtuple("Experience", field_names=["state", "action", "reward", "next_state", "done"])
 
@@ -45,15 +43,12 @@ class ReplayBuffer:
         self._discounts = np.power(self.gamma, np.arange(self.n_multisteps + 1))
         self._target_discount = float(self._discounts[-1])
 
-    def add(self, i_agent, state, action, reward, next_state, done):
+    def add(self, state, action, reward, next_state, done):
         """Add a new experience to memory."""
-        assert isinstance(i_agent, int)
-        assert 0 <= i_agent < self.n_agents
-        collector = self.multistep_collectors[i_agent]
         e = self.experience(state, action, reward, next_state, done)
-        collector.append(e)
-        if len(collector) == self.n_multisteps:
-            self.memory[self.memory_write_idx] = tuple(collector)
+        self.multistep_collector.append(e)
+        if len(self.multistep_collector) == self.n_multisteps:
+            self.memory[self.memory_write_idx] = tuple(self.multistep_collector)
 
             delta_priority_a = self.max_priority_a - self.priorities_a[self.memory_write_idx]
             tree_idx = self._memory_start_idx + self.memory_write_idx
@@ -71,9 +66,9 @@ class ReplayBuffer:
                 self.memory_write_idx = 0
 
             if self.separate_experiences:
-                collector.clear()
+                self.multistep_collector.clear()
         if done:
-            collector.clear()
+            self.multistep_collector.clear()
 
     def sample(self, beta):
         """Randomly sample a batch of experiences from memory.
@@ -145,13 +140,8 @@ class ReplayBuffer:
 
         self.max_priority_a = np.max(self.priorities_a)
 
-    def reset_multisteps(self, i_agent=-1):
-        assert isinstance(i_agent, int) and -1 <= i_agent < self.n_agents
-        if i_agent == -1:
-            for collector in self.multistep_collectors:
-                collector.clear()
-        else:
-            self.multistep_collectors[i_agent].clear()
+    def reset_multisteps(self):
+        self.multistep_collector.clear()
 
     def __len__(self):
         """Return the current size of internal memory."""

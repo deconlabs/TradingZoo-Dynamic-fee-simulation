@@ -126,7 +126,7 @@ class Agent():
         self.optimizer = optim.Adam(self.qnetwork_local.parameters(), lr=lr, weight_decay=weight_decay)
 
         # Replay memory
-        self.memory = ReplayBuffer(1, buffer_size, batch_size, n_multisteps, gamma, a, False)
+        self.memory = ReplayBuffer(buffer_size, batch_size, n_multisteps, gamma, a, False)
         # Initialize time step (for updating every UPDATE_EVERY steps and TARGET_UPDATE_EVERY steps)
         self.u_step = 0
         self.t_step = 0
