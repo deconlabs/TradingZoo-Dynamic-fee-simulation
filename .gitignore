@@ -6,3 +6,6 @@ TradingGym/DQN_long_with_fee_logs_and_saves/
 TradingGym/DQN_with_fee_logs_and_saves/
 TradingGym/__pycache__
 TradingGym/.ipynb_checkpoints
+*.pth
+*.txt
+*.png
