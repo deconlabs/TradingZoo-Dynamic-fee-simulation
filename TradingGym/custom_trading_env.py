@@ -165,7 +165,7 @@ class TradingEnv:
 
     def _long_cover(self, current_price_mean, current_mkt_position, action):  # Used once in `step()`
         # n_stock = (보유주식 개수) * (비율(액션))
-        n_stock = round(current_mkt_position * (action - 10) / self.n_action_intervals)
+        n_stock = round(current_mkt_position * (action - self.hold_action) / self.n_action_intervals)
         # n_stock = min(action - self.hold_action, current_mkt_position)
         self.budget += self.chg_price[0] * n_stock
         self.chg_price_mean[:] = current_price_mean

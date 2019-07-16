@@ -20,19 +20,21 @@ args = argparser()
 device = device
 dqn_agent.set_device(device)
 
-save_location = './custom_saves'
-
-# Hyperparameters
-# num_steps = 128
+# save_location = './custom_saves'
+save_location = './custom_saves2'
 
 save_interval  = 100
 print_interval = 1
 
-sample_len   = 4096
-obs_data_len = 256
-step_len     = 16
+# sample_len   = 4096
+# obs_data_len = 256
+# step_len     = 16
+sample_len   = 960
+obs_data_len = 192
+step_len     = 6
 
-n_action_intervals = 10
+# n_action_intervals = 10
+n_action_intervals = 5
 
 init_budget = 1
 
@@ -79,6 +81,7 @@ def main():
 #             _reward_deque[-1] = reward
 
             rewards.append(reward)
+            print(reward, end=' ')
             score += reward
             agent.step(state, action, reward, next_state, done)
             state = next_state
@@ -93,6 +96,7 @@ def main():
         scores_list.append(score)
 
         if n_epi % print_interval == 0 and n_epi != 0:
+            print(env.budget)
             print_str = "# of episode: {:d}, avg score: {:.4f}\n  Actions: {}".format(n_epi, sum(scores_list[-print_interval:]) / print_interval, np.array(actions))
             print(print_str)
             with open(os.path.join(save_location, "output_log.txt"), mode='a') as f:
