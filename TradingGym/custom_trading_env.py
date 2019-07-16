@@ -13,7 +13,7 @@ class TradingEnv:
     def __init__(self, custom_args, env_id, obs_data_len, step_len, sample_len,
                  df, fee, initial_budget, n_action_intervals, deal_col_name='c',
                  feature_names=['c', 'v'],
-                 return_transaction=True,
+                 return_transaction=True, sell_at_end=False,
                  fluc_div=100.0, gameover_limit=5,
                  *args, **kwargs):
         """
@@ -77,6 +77,7 @@ class TradingEnv:
         self.fluc_div = fluc_div
         self.gameover = gameover_limit  # todo : 이게 뭘까
         self.return_transaction = return_transaction
+        self.sell_at_end = sell_at_end
 
         self.render_on = 0
         self.buy_color, self.sell_color = (1, 2)
@@ -145,9 +146,7 @@ class TradingEnv:
     def _long(self, open_posi, enter_price, current_mkt_position, current_price_mean, action):  # Used once in `step()`
         enter_price = (1 + self.fee) * enter_price
         betting_rate = (action + 1) / self.n_action_intervals
-        n_stock = round(self.budget * betting_rate / enter_price)  # 주문할 주식 수
-        if enter_price * n_stock > self.budget:  # 반올림한 값이 현 보유자산을 초과할 경우 1개 적게 구입
-            n_stock -= 1
+        n_stock = self.budget * betting_rate / enter_price  # 주문할 주식 수
         # n_stock = min(action + 1, self.budget // enter_price)
         self.budget -= enter_price * n_stock
         if open_posi:
@@ -165,7 +164,7 @@ class TradingEnv:
 
     def _long_cover(self, current_price_mean, current_mkt_position, action):  # Used once in `step()`
         # n_stock = (보유주식 개수) * (비율(액션))
-        n_stock = round(current_mkt_position * (action - self.hold_action) / self.n_action_intervals)
+        n_stock = current_mkt_position * (action - self.hold_action) / self.n_action_intervals
         # n_stock = min(action - self.hold_action, current_mkt_position)
         self.budget += self.chg_price[0] * n_stock
         self.chg_price_mean[:] = current_price_mean
@@ -211,8 +210,8 @@ class TradingEnv:
         done = False
         if self.step_st + self.obs_len + self.step_len >= len(self.price):
             done = True
-            action = -1
-            if current_mkt_position != 0:
+            if current_mkt_position != 0 and self.sell_at_end:
+                action = -1
                 self.chg_price_mean[:] = current_price_mean
                 self.chg_posi[:] = 0
                 self.chg_posi_var[:1] = -current_mkt_position

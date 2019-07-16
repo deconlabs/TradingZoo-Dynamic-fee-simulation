@@ -4,10 +4,20 @@ import argparse
 def argparser():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--n_agent', type=int, default=20,
-                        help='에이전트 수')
-    parser.add_argument('--no_short', type=bool, default=False,
-                        help='Allow Inverse trading?')
+    parser.add_argument('--device_num', type=int, default=0,
+                        help='cuda device num')
+
+    parser.add_argument('--save_num', type=int, default=0,
+                        help='folder name')
+
+    parser.add_argument('--risk_aversion', type=float, default=1.,
+                        help='risk_aversion_level')
+
+    parser.add_argument('--n_episodes', type=int, default=1000,
+                        help='risk_aversion_level')
+
+    parser.add_argument('--i', type=int, default=1.,
+                        help='test')
 
     args = parser.parse_args()
     return args

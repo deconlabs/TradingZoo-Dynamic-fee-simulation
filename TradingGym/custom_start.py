@@ -17,11 +17,14 @@ from custom_hyperparameters import hyperparams
 from arguments import argparser
 
 args = argparser()
-device = device
+# device = device
+device = torch.device("cuda:3")
 dqn_agent.set_device(device)
 
 # save_location = './custom_saves'
-save_location = './custom_saves2'
+# save_location = './custom_saves2'
+# save_location = './custom_saves3'
+save_location = './custom_saves4'
 
 save_interval  = 100
 print_interval = 1
@@ -29,9 +32,11 @@ print_interval = 1
 # sample_len   = 4096
 # obs_data_len = 256
 # step_len     = 16
-sample_len   = 960
+sample_len   = 480
 obs_data_len = 192
-step_len     = 6
+step_len     = 1
+
+risk_aversion_multiplier = 5
 
 # n_action_intervals = 10
 n_action_intervals = 5
@@ -42,13 +47,13 @@ init_budget = 1
 
 torch.save(hyperparams, os.path.join(save_location, "hyperparams.pth"))
 
-df = pd.read_hdf('dataset/binance_data.h5', 'STW')
+df = pd.read_hdf('dataset/binance_data_train.h5', 'STW')
 df.fillna(method='ffill', inplace=True)
 
 def main():
 
     env = TradingEnv(custom_args=args, env_id='custom_trading_env', obs_data_len=obs_data_len, step_len=step_len, sample_len=sample_len,
-                           df=df, fee=0.001, initial_budget=1, n_action_intervals=n_action_intervals, deal_col_name='c',
+                           df=df, fee=0.001, initial_budget=1, n_action_intervals=n_action_intervals, deal_col_name='c', sell_at_end=True,
                            feature_names=['o', 'h','l','c','v',
                                           'num_trades', 'taker_base_vol'])
     agent = dqn_agent.Agent(action_size=2 * n_action_intervals + 1, obs_len=obs_data_len, num_features=env.reset().shape[-1], **hyperparams)
@@ -81,8 +86,9 @@ def main():
 #             _reward_deque[-1] = reward
 
             rewards.append(reward)
-            print(reward, end=' ')
             score += reward
+            if reward < 0:
+                reward *= risk_aversion_multiplier
             agent.step(state, action, reward, next_state, done)
             state = next_state
             if done:
@@ -96,7 +102,6 @@ def main():
         scores_list.append(score)
 
         if n_epi % print_interval == 0 and n_epi != 0:
-            print(env.budget)
             print_str = "# of episode: {:d}, avg score: {:.4f}\n  Actions: {}".format(n_epi, sum(scores_list[-print_interval:]) / print_interval, np.array(actions))
             print(print_str)
             with open(os.path.join(save_location, "output_log.txt"), mode='a') as f:
