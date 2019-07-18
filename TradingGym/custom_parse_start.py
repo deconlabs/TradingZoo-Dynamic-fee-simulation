@@ -32,7 +32,7 @@ sample_len   = 480
 obs_data_len = 192
 step_len     = 1
 
-risk_aversion_multiplier = args.risk_aversion
+risk_aversion_multiplier = 0.5 + args.risk_aversion / 2
 
 n_action_intervals = 5
 
