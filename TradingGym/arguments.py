@@ -4,6 +4,9 @@ import argparse
 def argparser():
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('--agent_num', type=int, default=1,
+                        help='which agent to load')
+
     parser.add_argument('--device_num', type=int, default=0,
                         help='cuda device num')
 
@@ -18,6 +21,12 @@ def argparser():
 
     parser.add_argument('--i', type=int, default=1.,
                         help='test')
+
+    parser.add_argument('--fee', type=float, default=.001,
+                        help='fee percentage')
+    
+    parser.add_argument('--render', type=bool, default=False,
+                        help='want to render?')
 
     args = parser.parse_args()
     return args

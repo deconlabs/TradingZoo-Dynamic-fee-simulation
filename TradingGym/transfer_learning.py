@@ -17,35 +17,38 @@ from custom_hyperparameters import hyperparams
 from arguments import argparser
 
 args = argparser()
-# device = device
-device = torch.device("cuda:3")
+# device_num, save_num, risk_aversion, n_episodes, fee
+
+device = torch.device("cuda:{}".format(args.device_num))
 dqn_agent.set_device(device)
 
-# save_location = './custom_saves'
-# save_location = './custom_saves2'
-# save_location = './custom_saves3'
-save_location = './custom_saves4'
+load_location = 'saves/{}'.format(args.save_num)
+
+save_location = 'saves/transfer0/{}/{}'.format(args.fee , args.save_num)
+
+if not os.path.exists(save_location):
+    os.makedirs(save_location)
 
 save_interval  = 100
 print_interval = 1
 
-# sample_len   = 4096
-# obs_data_len = 256
-# step_len     = 16
+n_episodes   = args.n_episodes
 sample_len   = 480
 obs_data_len = 192
 step_len     = 1
+fee          = args.fee
 
-risk_aversion_multiplier = 5
+risk_aversion_multiplier = 0.5 + args.risk_aversion / 2
 
-# n_action_intervals = 10
 n_action_intervals = 5
 
 init_budget = 1
 
-# _persist_period = (obs_data_len // step_len) + int(obs_data_len % step_len != 0)
-
 torch.save(hyperparams, os.path.join(save_location, "hyperparams.pth"))
+torch.save({'n_episodes': n_episodes, 'sample_len': sample_len, 'obs_data_len': obs_data_len, 'step_len': step_len,
+            'fee': fee, 'risk_aversion_multiplier': risk_aversion_multiplier ,'n_action_intervals': n_action_intervals,
+            'init_budget': init_budget},
+           os.path.join(save_location, "config.pth"))
 
 df = pd.read_hdf('dataset/binance_data_train.h5', 'STW')
 df.fillna(method='ffill', inplace=True)
@@ -57,6 +60,8 @@ def main():
                            feature_names=['o', 'h','l','c','v',
                                           'num_trades', 'taker_base_vol'])
     agent = dqn_agent.Agent(action_size=2 * n_action_intervals + 1, obs_len=obs_data_len, num_features=env.reset().shape[-1], **hyperparams)
+    agent.qnetwork_local.load_state_dict(torch.load(os.path.join(load_location, 'TradingGym_Rainbow_3000.pth'), map_location=device))
+    agent.qnetwork_local.to(device)
 
     beta = 0.4
     beta_inc = (1 - beta) / 1000
@@ -65,30 +70,26 @@ def main():
     scores_list = []
     loss_list = []
     n_epi = 0
-    # for n_epi in range(10000):  # 게임 1만판 진행
-    while True:
+    for i_episode in range(n_episodes):
         n_epi +=1
 
         state = env.reset()
         score = 0.
         actions = []
         rewards = []
-#         _reward_deque = deque(maxlen=_persist_period)
 
         # for t in range(num_steps):
         while True:
             action = int(agent.act(state, eps=0.))
-            actions.append(action)
             next_state, reward, done, _ = env.step(action)
-
-#             _reward_deque.append(0)
-#             reward = reward - sum(_reward_deque)
-#             _reward_deque[-1] = reward
 
             rewards.append(reward)
             score += reward
             if reward < 0:
                 reward *= risk_aversion_multiplier
+            if done:
+                action = 2 * n_action_intervals
+            actions.append(action)
             agent.step(state, action, reward, next_state, done)
             state = next_state
             if done:

@@ -9,3 +9,4 @@ TradingGym/.ipynb_checkpoints
 *.pth
 *.txt
 *.png
+*.csv

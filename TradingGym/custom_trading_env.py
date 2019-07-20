@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from colour import Color
 
-
 class TradingEnv:
     def __init__(self, custom_args, env_id, obs_data_len, step_len, sample_len,
                  df, fee, initial_budget, n_action_intervals, deal_col_name='c',
@@ -41,6 +40,7 @@ class TradingEnv:
             assert col in df.columns, "feature name: {} not in Dataframe.".format(col)
 
         self.custom_args = custom_args
+        self.total_fee = 0
 
         logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(message)s')
         self.logger = logging.getLogger(env_id)
@@ -92,6 +92,7 @@ class TradingEnv:
         return df_section
 
     def reset(self):  # prepares various state components
+        self.total_fee = 0
         self.df_sample = self._random_choice_section()
         self.step_st = 0
         # define the price to calculate the reward
@@ -144,10 +145,11 @@ class TradingEnv:
         return self.obs_return
 
     def _long(self, open_posi, enter_price, current_mkt_position, current_price_mean, action):  # Used once in `step()`
-        enter_price = (1 + self.fee) * enter_price
+        fee = self.fee * enter_price
+        enter_price += fee
         betting_rate = (action + 1) / self.n_action_intervals
         n_stock = self.budget * betting_rate / enter_price  # 주문할 주식 수
-        # n_stock = min(action + 1, self.budget // enter_price)
+        self.total_fee += n_stock * fee
         self.budget -= enter_price * n_stock
         if open_posi:
             self.chg_price_mean[:] = enter_price

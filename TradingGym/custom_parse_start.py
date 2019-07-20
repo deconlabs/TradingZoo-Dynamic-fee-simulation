@@ -82,6 +82,8 @@ def main():
             score += reward
             if reward < 0:
                 reward *= risk_aversion_multiplier
+            if done:
+                action = 2 * n_action_intervals
             agent.step(state, action, reward, next_state, done)
             state = next_state
             if done:
@@ -104,7 +106,7 @@ def main():
             torch.save(agent.qnetwork_local.state_dict(), os.path.join(save_location, 'TradingGym_Rainbow_{:d}.pth'.format(n_epi)))
             torch.save(scores_list, os.path.join(save_location, 'scores.pth'))
 
-    env.close()
+    # env.close()
 
 
 if __name__ == '__main__':
