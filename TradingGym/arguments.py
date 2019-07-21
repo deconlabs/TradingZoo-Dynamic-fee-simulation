@@ -10,7 +10,7 @@ def argparser():
     parser.add_argument('--device_num', type=int, default=0,
                         help='cuda device num')
 
-    parser.add_argument('--save_num', type=int, default=0,
+    parser.add_argument('--save_num', type=int, default=1,
                         help='folder name')
 
     parser.add_argument('--risk_aversion', type=float, default=1.,

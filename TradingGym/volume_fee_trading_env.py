@@ -67,7 +67,7 @@ class TradingEnv:
         self.price_name = deal_col_name
 
         self.step_len = step_len
-        self.fee = fee
+        self.fee_rate = fee
 
         self.sample_len = sample_len
 
@@ -94,7 +94,7 @@ class TradingEnv:
     def reset(self):  # prepares various state components
         self.total_fee = 0
         self.df_sample = self._random_choice_section()
-        self.previous_volume = self.df_sample['v']
+
 
         self.step_st = 0
         # define the price to calculate the reward
@@ -120,6 +120,7 @@ class TradingEnv:
         self.transaction_details = pd.DataFrame()
 
         # observation part
+        self.previous_volume = self.df_sample['v'].iloc[self.step_st: self.step_st + self.obs_len]
         self.obs_state = self.obs_features[self.step_st: self.step_st + self.obs_len]
         self.obs_posi = self.posi_arr[self.step_st: self.step_st + self.obs_len]
         self.obs_posi_var = self.posi_variation_arr[self.step_st: self.step_st + self.obs_len]
@@ -147,10 +148,14 @@ class TradingEnv:
         return self.obs_return
 
     def _long(self, open_posi, enter_price, current_mkt_position, current_price_mean, action):  # Used once in `step()`
-        fee = self.fee * enter_price
-        enter_price += fee
+        fee = self.fee_rate * enter_price
+
+        enter_price += fee  # fee = 실제 내는 돈, self.fee_rate = 수수료율
+
+
         betting_rate = (action + 1) / self.n_action_intervals
         n_stock = self.budget * betting_rate / enter_price  # 주문할 주식 수
+
         self.total_fee += n_stock * fee
         self.budget -= enter_price * n_stock
         if open_posi:
@@ -211,8 +216,10 @@ class TradingEnv:
         self.chg_makereal = self.obs_makereal[-self.step_len:]
         self.chg_reward = self.obs_reward[-self.step_len:]
 
-        self.fee = self.fee * self.df_sample['v'] / self.previous_volume
-        self.previous_volume = self.df_sample['v']
+        self.fee_rate = self.fee_rate * np.clip(
+            (self.df_sample['v'].iloc[self.step_st: self.step_st + self.obs_len].sum() / self.previous_volume.sum()),
+            0.99, 1.01)
+        self.previous_volume = self.df_sample['v'].iloc[self.step_st + self.obs_len - 1]
 
         done = False
         if self.step_st + self.obs_len + self.step_len >= len(self.price):

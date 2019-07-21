@@ -19,7 +19,7 @@ from arguments import argparser
 args = argparser()
 # device_num, save_num, risk_aversion, n_episodes, fee
 
-device = torch.device("cuda:{}".format(args.device_num))
+device = torch.device("cuda:{}".format(args.device_num) if torch.cuda.is_available() else "cpu")
 dqn_agent.set_device(device)
 
 load_location = 'saves/{}'.format(args.save_num)
@@ -60,7 +60,8 @@ def main():
                            feature_names=['o', 'h','l','c','v',
                                           'num_trades', 'taker_base_vol'])
     agent = dqn_agent.Agent(action_size=2 * n_action_intervals + 1, obs_len=obs_data_len, num_features=env.reset().shape[-1], **hyperparams)
-    agent.qnetwork_local.load_state_dict(torch.load(os.path.join(load_location, 'TradingGym_Rainbow_3000.pth'), map_location=device))
+    agent.qnetwork_local.load_state_dict(
+        torch.load(os.path.join(load_location, 'TradingGym_Rainbow_2000.pth'), map_location=device))
     agent.qnetwork_local.to(device)
 
     beta = 0.4
@@ -105,7 +106,7 @@ def main():
         if n_epi % print_interval == 0 and n_epi != 0:
             print_str = "# of episode: {:d}, avg score: {:.4f}\n  Actions: {}".format(n_epi, sum(scores_list[-print_interval:]) / print_interval, np.array(actions))
             print(print_str)
-            print(f"env_fee ={env.fee}")
+            print(f"env_fee ={env.fee_rate}")
             # with open(os.path.join(save_location, "output_log.txt"), mode='a') as f:
             #     f.write(print_str + '\n')
 
