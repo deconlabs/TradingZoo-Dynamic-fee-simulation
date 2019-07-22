@@ -219,7 +219,7 @@ class TradingEnv:
         self.fee_rate = self.fee_rate * np.clip(
             (self.df_sample['v'].iloc[self.step_st: self.step_st + self.obs_len].sum() / self.previous_volume.sum()),
             0.99, 1.01)
-        self.previous_volume = self.df_sample['v'].iloc[self.step_st + self.obs_len - 1]
+        self.previous_volume = self.df_sample['v'].iloc[self.step_st: self.step_st + self.obs_len]
 
         done = False
         if self.step_st + self.obs_len + self.step_len >= len(self.price):
