@@ -4,8 +4,6 @@ import logging
 import numpy as np
 import pandas as pd
 import matplotlib
-
-matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from colour import Color
@@ -27,7 +25,7 @@ class TradingEnv:
             # datetime
             # serial_number -> serial num of deal at each day recalculating
 
-        # fee -> Proportion of price to pay as fee when buying assets;
+        # fee -> Proportion of price to pay as fee when buying/selling assets;
                  (e.g. 0.5 = 50%, 0.01 = 1%)
         # initial_budget -> The amount of budget to begin with
         # n_action_intervals -> Number of actions for Buy and Sell actions;
@@ -170,11 +168,14 @@ class TradingEnv:
         # n_stock = (보유주식 개수) * (비율(액션))
         n_stock = current_mkt_position * (action - self.hold_action) / self.n_action_intervals
         # n_stock = min(action - self.hold_action, current_mkt_position)
-        self.budget += self.chg_price[0] * n_stock
+        total_value = self.chg_price[0] * n_stock
+        fee = self.fee * total_value
+        self.budget += total_value - fee
+        self.total_fee += fee
         self.chg_price_mean[:] = current_price_mean
         self.chg_posi[:] = current_mkt_position - n_stock
         self.chg_makereal[:1] = 1
-        self.chg_reward[:] = ((self.chg_price - self.chg_price_mean) * n_stock) * self.chg_makereal / self.initial_budget
+        self.chg_reward[:] = ((self.chg_price * (1 - self.fee) - self.chg_price_mean) * n_stock) * self.chg_makereal / self.initial_budget
         self.chg_posi_var[:1] = -n_stock
         self.chg_posi_entry_cover[:1] = -1
 
@@ -222,7 +223,7 @@ class TradingEnv:
                 self.chg_posi_entry_cover[:1] = -2
                 self.chg_makereal[:1] = 1
                 self.budget += self.chg_price[0] * current_mkt_position
-                self.chg_reward[:] = (self.chg_price - self.chg_price_mean) * current_mkt_position * self.chg_makereal / self.initial_budget
+                self.chg_reward[:] = (self.chg_price * (1 - self.fee) - self.chg_price_mean) * current_mkt_position * self.chg_makereal / self.initial_budget
             self.transaction_details = pd.DataFrame([self.posi_arr,
                                                      self.posi_variation_arr,
                                                      self.posi_entry_cover_arr,
@@ -261,7 +262,7 @@ class TradingEnv:
             if current_mkt_position != 0:
                 self._stayon(current_price_mean, current_mkt_position)
 
-        self.chg_reward_fluctuant[:] = (self.chg_price - self.chg_price_mean) * self.chg_posi / self.initial_budget
+        self.chg_reward_fluctuant[:] = (self.chg_price * (1 - self.fee) - self.chg_price_mean) * self.chg_posi / self.initial_budget
 
         if self.return_transaction:
             self.obs_return = np.concatenate((self.obs_state,
