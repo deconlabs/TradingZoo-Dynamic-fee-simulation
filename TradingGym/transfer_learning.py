@@ -112,7 +112,7 @@ def main():
             torch.save(agent.qnetwork_local.state_dict(), os.path.join(save_location, 'TradingGym_Rainbow_{:d}.pth'.format(n_epi)))
             torch.save(scores_list, os.path.join(save_location, 'scores.pth'))
 
-    env.close()
+    del env
 
 
 if __name__ == '__main__':
