@@ -56,7 +56,7 @@ df.fillna(method='ffill', inplace=True)
 def main():
 
     env = TradingEnv(custom_args=args, env_id='custom_trading_env', obs_data_len=obs_data_len, step_len=step_len, sample_len=sample_len,
-                           df=df, fee=0.001, initial_budget=1, n_action_intervals=n_action_intervals, deal_col_name='c', sell_at_end=True,
+                           df=df, fee=fee, initial_budget=1, n_action_intervals=n_action_intervals, deal_col_name='c', sell_at_end=True,
                            feature_names=['o', 'h','l','c','v',
                                           'num_trades', 'taker_base_vol'])
     agent = dqn_agent.Agent(action_size=2 * n_action_intervals + 1, obs_len=obs_data_len, num_features=env.reset().shape[-1], **hyperparams)
@@ -105,14 +105,14 @@ def main():
         if n_epi % print_interval == 0 and n_epi != 0:
             print_str = "# of episode: {:d}, avg score: {:.4f}\n  Actions: {}".format(n_epi, sum(scores_list[-print_interval:]) / print_interval, np.array(actions))
             print(print_str)
-            with open(os.path.join(save_location, "output_log.txt"), mode='a') as f:
-                f.write(print_str + '\n')
+            # with open(os.path.join(save_location, "output_log.txt"), mode='a') as f:
+            #     f.write(print_str + '\n')
 
         if n_epi % save_interval == 0:
             torch.save(agent.qnetwork_local.state_dict(), os.path.join(save_location, 'TradingGym_Rainbow_{:d}.pth'.format(n_epi)))
             torch.save(scores_list, os.path.join(save_location, 'scores.pth'))
 
-    env.close()
+    del env
 
 
 if __name__ == '__main__':
