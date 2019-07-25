@@ -106,8 +106,8 @@ def main():
         if n_epi % print_interval == 0 and n_epi != 0:
             print_str = "# of episode: {:d}, avg score: {:.4f}\n  Actions: {}".format(n_epi, sum(scores_list[-print_interval:]) / print_interval, np.array(actions))
             print(print_str)
-            with open(os.path.join(save_location, "output_log.txt"), mode='a') as f:
-                f.write(print_str + '\n')
+            # with open(os.path.join(save_location, "output_log.txt"), mode='a') as f:
+            #     f.write(print_str + '\n')
 
         if n_epi % save_interval == 0:
             torch.save(agent.qnetwork_local.state_dict(), os.path.join(save_location, 'TradingGym_Rainbow_{:d}.pth'.format(n_epi)))

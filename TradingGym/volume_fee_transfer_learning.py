@@ -24,7 +24,7 @@ dqn_agent.set_device(device)
 
 load_location = 'saves/{}'.format(args.save_num)
 
-save_location = 'saves/transfer0/{}/{}'.format('volume_volatile', args.save_num)
+save_location = 'saves/transfer1/{}/{}'.format('volume_volatile', args.save_num)
 
 if not os.path.exists(save_location):
     os.makedirs(save_location)
@@ -56,7 +56,7 @@ df.fillna(method='ffill', inplace=True)
 def main():
 
     env = TradingEnv(custom_args=args, env_id='custom_trading_env', obs_data_len=obs_data_len, step_len=step_len, sample_len=sample_len,
-                           df=df, fee=0.001, initial_budget=1, n_action_intervals=n_action_intervals, deal_col_name='c', sell_at_end=True,
+                           df=df, fee=fee, initial_budget=1, n_action_intervals=n_action_intervals, deal_col_name='c', sell_at_end=True,
                            feature_names=['o', 'h','l','c','v',
                                           'num_trades', 'taker_base_vol'])
     agent = dqn_agent.Agent(action_size=2 * n_action_intervals + 1, obs_len=obs_data_len, num_features=env.reset().shape[-1], **hyperparams)

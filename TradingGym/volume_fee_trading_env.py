@@ -149,13 +149,9 @@ class TradingEnv:
 
     def _long(self, open_posi, enter_price, current_mkt_position, current_price_mean, action):  # Used once in `step()`
         fee = self.fee_rate * enter_price
-
-        enter_price += fee  # fee = 실제 내는 돈, self.fee_rate = 수수료율
-
-
+        enter_price += fee  # fee = 실제 내는 돈, self.fee_rate = 수수료
         betting_rate = (action + 1) / self.n_action_intervals
         n_stock = self.budget * betting_rate / enter_price  # 주문할 주식 수
-
         self.total_fee += n_stock * fee
         self.budget -= enter_price * n_stock
         if open_posi:
@@ -175,11 +171,13 @@ class TradingEnv:
         # n_stock = (보유주식 개수) * (비율(액션))
         n_stock = current_mkt_position * (action - self.hold_action) / self.n_action_intervals
         # n_stock = min(action - self.hold_action, current_mkt_position)
-        self.budget += self.chg_price[0] * n_stock
+        total_value = self.chg_price[0] * n_stock
+        fee = self.fee_rate * total_value
+        self.budget += total_value - fee
         self.chg_price_mean[:] = current_price_mean
         self.chg_posi[:] = current_mkt_position - n_stock
         self.chg_makereal[:1] = 1
-        self.chg_reward[:] = ((self.chg_price - self.chg_price_mean) * n_stock) * self.chg_makereal / self.initial_budget
+        self.chg_reward[:] = ((self.chg_price *(1 - self.fee_rate) - self.chg_price_mean) * n_stock) * self.chg_makereal / self.initial_budget
         self.chg_posi_var[:1] = -n_stock
         self.chg_posi_entry_cover[:1] = -1
 
@@ -216,9 +214,7 @@ class TradingEnv:
         self.chg_makereal = self.obs_makereal[-self.step_len:]
         self.chg_reward = self.obs_reward[-self.step_len:]
 
-        self.fee_rate = self.fee_rate * np.clip(
-            (self.df_sample['v'].iloc[self.step_st: self.step_st + self.obs_len].sum() / self.previous_volume.sum()),
-            0.99, 1.01)
+        self.fee_rate = self.fee_rate * self.df_sample['v'].iloc[self.step_st: self.step_st + self.obs_len].sum() / self.previous_volume.sum()
         self.previous_volume = self.df_sample['v'].iloc[self.step_st: self.step_st + self.obs_len]
 
         done = False
@@ -232,7 +228,7 @@ class TradingEnv:
                 self.chg_posi_entry_cover[:1] = -2
                 self.chg_makereal[:1] = 1
                 self.budget += self.chg_price[0] * current_mkt_position
-                self.chg_reward[:] = (self.chg_price - self.chg_price_mean) * current_mkt_position * self.chg_makereal / self.initial_budget
+                self.chg_reward[:] = (self.chg_price * (1 - self.fee_rate) - self.chg_price_mean) * current_mkt_position * self.chg_makereal / self.initial_budget
             self.transaction_details = pd.DataFrame([self.posi_arr,
                                                      self.posi_variation_arr,
                                                      self.posi_entry_cover_arr,
@@ -271,7 +267,7 @@ class TradingEnv:
             if current_mkt_position != 0:
                 self._stayon(current_price_mean, current_mkt_position)
 
-        self.chg_reward_fluctuant[:] = (self.chg_price - self.chg_price_mean) * self.chg_posi / self.initial_budget
+        self.chg_reward_fluctuant[:] = (self.chg_price * (1 - self.fee_rate)- self.chg_price_mean) * self.chg_posi / self.initial_budget
 
         if self.return_transaction:
             self.obs_return = np.concatenate((self.obs_state,

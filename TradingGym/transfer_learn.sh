@@ -19,3 +19,4 @@ done
 # do
 #     tmux new-session -s $i -d "/home/jeffrey/anaconda3/envs/RL/bin/python transfer_learning.py --device_num=$((i%4)) --save_num=$i --risk_aversion=$i --n_episodes=500 --fee=.005; read"
 # done
+    
