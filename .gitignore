@@ -11,3 +11,4 @@ TradingGym/.ipynb_checkpoints
 *.png
 *.csv
 *.pyc
+!figs/*.png

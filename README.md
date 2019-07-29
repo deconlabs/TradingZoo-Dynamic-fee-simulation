@@ -46,10 +46,10 @@ cd agent/DQN
 python dqn_start.py
 ```
 
-##total fee and total volume under different fee rate
+## total fee and total volume under different fee rate
 ![total_fee](figs/total_fee.png)
 ![total_volume](figs/total_volume.png)
 
 
-##Performance
+## Performance
 ![gif](figs/ezgif.com-optimize.gif)
