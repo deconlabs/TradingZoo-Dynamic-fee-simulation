@@ -1,11 +1,12 @@
+import os
 import logging
 
-import matplotlib
-import matplotlib.patches as patches
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+from colour import Color
 
 class TradingEnv:
     def __init__(self, custom_args, env_id, obs_data_len, step_len, sample_len,
@@ -40,7 +41,7 @@ class TradingEnv:
 
         self.custom_args = custom_args
         self.total_fee = 0
-
+        
         logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(message)s')
         self.logger = logging.getLogger(env_id)
         # self.file_loc_path = os.environ.get('FILEPATH', '')
@@ -94,6 +95,7 @@ class TradingEnv:
         self.total_fee = 0
         self.df_sample = self._random_choice_section()
 
+
         self.step_st = 0
         # define the price to calculate the reward
         self.price = self.df_sample[self.price_name].as_matrix()
@@ -138,10 +140,7 @@ class TradingEnv:
                                               self.obs_price_mean[:, np.newaxis],
                                               self.obs_reward_fluctuant[:, np.newaxis],
                                               self.obs_makereal[:, np.newaxis],
-                                              self.obs_reward[:, np.newaxis],
-                                              np.array([self.fee_rate for _ in range(self.obs_len)])[:, np.newaxis]),
-
-                                             axis=1)
+                                              self.obs_reward[:, np.newaxis]), axis=1)
         else:
             self.obs_return = self.obs_state
 
@@ -178,8 +177,7 @@ class TradingEnv:
         self.chg_price_mean[:] = current_price_mean
         self.chg_posi[:] = current_mkt_position - n_stock
         self.chg_makereal[:1] = 1
-        self.chg_reward[:] = ((self.chg_price * (
-                1 - self.fee_rate) - self.chg_price_mean) * n_stock) * self.chg_makereal / self.initial_budget
+        self.chg_reward[:] = ((self.chg_price *(1 - self.fee_rate) - self.chg_price_mean) * n_stock) * self.chg_makereal / self.initial_budget
         self.chg_posi_var[:1] = -n_stock
         self.chg_posi_entry_cover[:1] = -1
 
@@ -216,8 +214,7 @@ class TradingEnv:
         self.chg_makereal = self.obs_makereal[-self.step_len:]
         self.chg_reward = self.obs_reward[-self.step_len:]
 
-        self.fee_rate = self.fee_rate * self.df_sample['v'].iloc[
-                                        self.step_st: self.step_st + self.obs_len].sum() / self.previous_volume.sum()
+        self.fee_rate = self.fee_rate * self.df_sample['v'].iloc[self.step_st: self.step_st + self.obs_len].sum() / self.previous_volume.sum()
         self.previous_volume = self.df_sample['v'].iloc[self.step_st: self.step_st + self.obs_len]
 
         done = False
@@ -231,8 +228,7 @@ class TradingEnv:
                 self.chg_posi_entry_cover[:1] = -2
                 self.chg_makereal[:1] = 1
                 self.budget += self.chg_price[0] * current_mkt_position
-                self.chg_reward[:] = (self.chg_price * (
-                        1 - self.fee_rate) - self.chg_price_mean) * current_mkt_position * self.chg_makereal / self.initial_budget
+                self.chg_reward[:] = (self.chg_price * (1 - self.fee_rate) - self.chg_price_mean) * current_mkt_position * self.chg_makereal / self.initial_budget
             self.transaction_details = pd.DataFrame([self.posi_arr,
                                                      self.posi_variation_arr,
                                                      self.posi_entry_cover_arr,
@@ -271,8 +267,7 @@ class TradingEnv:
             if current_mkt_position != 0:
                 self._stayon(current_price_mean, current_mkt_position)
 
-        self.chg_reward_fluctuant[:] = (self.chg_price * (
-                1 - self.fee_rate) - self.chg_price_mean) * self.chg_posi / self.initial_budget
+        self.chg_reward_fluctuant[:] = (self.chg_price * (1 - self.fee_rate)- self.chg_price_mean) * self.chg_posi / self.initial_budget
 
         if self.return_transaction:
             self.obs_return = np.concatenate((self.obs_state,
@@ -283,10 +278,7 @@ class TradingEnv:
                                               self.obs_price_mean[:, np.newaxis],
                                               self.obs_reward_fluctuant[:, np.newaxis],
                                               self.obs_makereal[:, np.newaxis],
-                                              self.obs_reward[:, np.newaxis],
-                                              np.array([self.fee_rate for _ in range(self.obs_len)])[:, np.newaxis])
-                                             ,
-                                             axis=1)
+                                              self.obs_reward[:, np.newaxis]), axis=1)
         else:
             self.obs_return = self.obs_state
 

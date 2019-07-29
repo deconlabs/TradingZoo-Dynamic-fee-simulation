@@ -60,8 +60,8 @@ def main():
                            feature_names=['o', 'h','l','c','v',
                                           'num_trades', 'taker_base_vol'])
     agent = dqn_agent.Agent(action_size=2 * n_action_intervals + 1, obs_len=obs_data_len, num_features=env.reset().shape[-1], **hyperparams)
-    # agent.qnetwork_local.load_state_dict(
-    #     torch.load(os.path.join(load_location, 'TradingGym_Rainbow_2000.pth'), map_location=device))
+    agent.qnetwork_local.load_state_dict(
+        torch.load(os.path.join(load_location, 'TradingGym_Rainbow_2000.pth'), map_location=device))
     agent.qnetwork_local.to(device)
 
     beta = 0.4
