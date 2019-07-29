@@ -21,8 +21,8 @@ Various Agent characteristics : tolearnce to risk , Different initial Asset
 
 
 # Used Algorithms
-## [PPO](https://arxiv.org/abs/1707.06347) 
-## [Rainbow](https://arxiv.org/abs/1710.02298)
+## [PPO](https://arxiv.org/abs/1707.06347) https://arxiv.org/abs/1707.06347
+## [Rainbow](https://arxiv.org/abs/1710.02298) https://arxiv.org/abs/1710.02298
 
 # Performance at trading gym
 
@@ -32,9 +32,24 @@ Various Agent characteristics : tolearnce to risk , Different initial Asset
 ![rainbow_performance](figs/rainbow_performance.png)
 # How to use it
 
-## you can enjoy with
 ```python3
-cd TradingGym
-python test_with_render_dqn.py
+pip install -r requirements.txt
+cd agent/PPO
+python ppo_start.py
 ```
+```python3
+cd agent/Attention
+python attention_start.py
+```
+```python3
+cd agent/DQN
+python dqn_start.py
+```
+
+##total fee and total volume under different fee rate
+![total_fee](figs/total_fee.png)
+![total_volume](figs/total_volume.png)
+
+
+##Performance
 ![gif](figs/ezgif.com-optimize.gif)
