@@ -21,8 +21,12 @@ Various Agent characteristics : tolearnce to risk , Different initial Asset
 
 
 # Used Algorithms
-## [PPO](https://arxiv.org/abs/1707.06347) https://arxiv.org/abs/1707.06347
-## [Rainbow](https://arxiv.org/abs/1710.02298) https://arxiv.org/abs/1710.02298
+## [PPO](https://arxiv.org/abs/1707.06347)
+https://arxiv.org/abs/1707.06347
+## [Rainbow](https://arxiv.org/abs/1710.02298)
+https://arxiv.org/abs/1710.02298
+## [Attention](http://nlp.seas.harvard.edu/2018/04/03/attention.html)
+http://nlp.seas.harvard.edu/2018/04/03/attention.html
 
 # Performance at trading gym
 
@@ -30,6 +34,8 @@ Various Agent characteristics : tolearnce to risk , Different initial Asset
 ![ppo_performance](figs/ppo_performance.png)
 ### Rainbow
 ![rainbow_performance](figs/rainbow_performance.png)
+
+
 # How to use it
 
 ```python3
