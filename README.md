@@ -4,15 +4,16 @@ This project is to about finding the optimal __Fee__ mechanism in the Exchange. 
 Special thanks to providing nice trading environment https://github.com/Yvictor/TradingGym/
 
 # Roadmap
-1. Make RL agent which works on [trading gym](https://github.com/Yvictor/TradingGym/)
-2. Put agents in our independent environment where various fee mechanisms are applied
-3.  
+ ~~Make RL agent which works on [trading gym](https://github.com/Yvictor/TradingGym/)~~
 
-Further :
-Various Agent characteristics : tolearnce to risk , Different initial Asset
+~~Put agents in our independent environment where various fee mechanisms are applied~~
+
+~~Various Agent characteristics : tolearnce to risk , Different initial Asset~~
+
+[]Provide environment where Limit order available -> lagged matching available to reflect more realistic trading environment
+
+
  
-
-
 # Adopted Fee mechanisms
 1. With no fee
 2. 0.1% on every Purchase

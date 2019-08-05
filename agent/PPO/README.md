@@ -132,70 +132,7 @@ envs.close()
     [2019-07-11 13:56:22,376] Making new env: training_v1
     [2019-07-11 13:56:22,382] Making new env: training_v1
     [2019-07-11 13:56:22,388] Making new env: training_v1
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:83: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.price = self.df_sample[self.price_name].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:83: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.price = self.df_sample[self.price_name].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:83: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.price = self.df_sample[self.price_name].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:83: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.price = self.df_sample[self.price_name].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:83: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.price = self.df_sample[self.price_name].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:83: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.price = self.df_sample[self.price_name].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:83: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.price = self.df_sample[self.price_name].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:83: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.price = self.df_sample[self.price_name].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:85: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.obs_features = self.df_sample[self.using_feature].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:83: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.price = self.df_sample[self.price_name].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:83: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.price = self.df_sample[self.price_name].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:85: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.obs_features = self.df_sample[self.using_feature].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:83: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.price = self.df_sample[self.price_name].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:85: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.obs_features = self.df_sample[self.using_feature].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:83: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.price = self.df_sample[self.price_name].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:83: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.price = self.df_sample[self.price_name].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:85: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.obs_features = self.df_sample[self.using_feature].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:83: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.price = self.df_sample[self.price_name].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:83: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.price = self.df_sample[self.price_name].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:85: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.obs_features = self.df_sample[self.using_feature].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:85: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.obs_features = self.df_sample[self.using_feature].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:85: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.obs_features = self.df_sample[self.using_feature].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:85: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.obs_features = self.df_sample[self.using_feature].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:85: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.obs_features = self.df_sample[self.using_feature].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:83: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.price = self.df_sample[self.price_name].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:85: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.obs_features = self.df_sample[self.using_feature].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:85: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.obs_features = self.df_sample[self.using_feature].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:85: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.obs_features = self.df_sample[self.using_feature].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:85: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.obs_features = self.df_sample[self.using_feature].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:85: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.obs_features = self.df_sample[self.using_feature].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:85: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.obs_features = self.df_sample[self.using_feature].as_matrix()
-    /home/jeffrey/Binanace_trading_simulation/TradingGym/trading_env/envs/training_v1.py:85: FutureWarning: Method .as_matrix will be removed in a future version. Use .values instead.
-      self.obs_features = self.df_sample[self.using_feature].as_matrix()
+    /home/jeffrey/Binanace_trading_simulation/TradingGym/
 
 
     # of episode :10, avg score : -0.0824, loss : -0.125099
@@ -531,8 +468,3 @@ envs.close()
     # of episode :1660, avg score : -0.0550, loss : -0.002749
     actions :  tensor([1, 2, 0,  ..., 1, 0, 2], device='cuda:2')
 
-
-
-```python
-
-```

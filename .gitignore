@@ -12,3 +12,4 @@ TradingGym/.ipynb_checkpoints
 *.csv
 *.pyc
 !figs/*.png
+Binance API test.ipynb
