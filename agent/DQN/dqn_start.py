@@ -21,7 +21,7 @@ args = argparser()
 device = torch.device("cuda:{}".format(args.device_num))
 dqn_agent.set_device(device)
 
-save_location = 'saves/{}'.format(args.save_num)
+save_location = 'saves/Original/{}'.format(args.save_num)
 if not os.path.exists(save_location):
     os.makedirs(save_location)
 
@@ -67,17 +67,11 @@ def main():
         score = 0.
         actions = []
         rewards = []
-#         _reward_deque = deque(maxlen=_persist_period)
 
-        # for t in range(num_steps):
         while True:
             action = int(agent.act(state, eps=0.))
             actions.append(action)
             next_state, reward, done, _ = env.step(action)
-
-#             _reward_deque.append(0)
-#             reward = reward - sum(_reward_deque)
-#             _reward_deque[-1] = reward
 
             rewards.append(reward)
             score += reward
@@ -107,7 +101,7 @@ def main():
             torch.save(agent.qnetwork_local.state_dict(), os.path.join(save_location, 'TradingGym_Rainbow_{:d}.pth'.format(n_epi)))
             torch.save(scores_list, os.path.join(save_location, 'scores.pth'))
 
-    # env.close()
+    del env
 
 
 if __name__ == '__main__':

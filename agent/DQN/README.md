@@ -1,5 +1,20 @@
+# DQNTradingAgent : Rainbow
+## What is Rainbow?
+It's a value-based RL algorithm which is based on DQN Algorithm. It combines several methods proposed to improve vanilla DQN and this is why it's so called Rainbow.
 
+If you want to dive more deep into RAINBOW, plz refer this [repo](https://github.com/Curt-Park/rainbow-is-all-you-need)
 
+## Training Origininal Agent
+```python3
+python dqn_start.py
+```
+## Transfer Learning 
+Agents have differnet risk aversion rate
+```shell
+bash transfer_learn.sh
+```
+
+### Below shows flow of Learning process of Rainbow agent
 ```python
 import random
 import numpy as np
@@ -80,7 +95,7 @@ agent.beta = beta
 scores_list = []
 loss_list = []
 n_epi = 0
-# for n_epi in range(10000):  # 게임 1만판 진행
+
 for i_episode in range(n_episodes):
     n_epi +=1
 
@@ -88,17 +103,13 @@ for i_episode in range(n_episodes):
     score = 0.
     actions = []
     rewards = []
-#         _reward_deque = deque(maxlen=_persist_period)
 
-    # for t in range(num_steps):
+
+
     while True:
         action = int(agent.act(state, eps=0.))
         actions.append(action)
         next_state, reward, done, _ = env.step(action)
-
-#             _reward_deque.append(0)
-#             reward = reward - sum(_reward_deque)
-#             _reward_deque[-1] = reward
 
         rewards.append(reward)
         score += reward

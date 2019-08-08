@@ -19,9 +19,6 @@ def argparser():
     parser.add_argument('--n_episodes', type=int, default=1000,
                         help='risk_aversion_level')
 
-    parser.add_argument('--i', type=int, default=1.,
-                        help='test')
-
     parser.add_argument('--fee', type=float, default=.001,
                         help='fee percentage')
     

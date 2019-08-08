@@ -12,28 +12,8 @@ class TradingEnv:
     def __init__(self, custom_args, env_id, obs_data_len, step_len, sample_len,
                  df, fee, initial_budget, n_action_intervals, deal_col_name='c',
                  feature_names=['c', 'v'],
-                 return_transaction=True, sell_at_end=False,
-                 fluc_div=100.0, gameover_limit=5,
-                 *args, **kwargs):
-        """
-        # need deal price as essential and specified the df format
-        # obs_data_leng -> observation data length
-        # step_len -> when call step rolling windows will + step_len
-        # sample_len -> length of each sample
-        # df -> dataframe that contain data for trading(format as...)
-            # price 
-            # datetime
-            # serial_number -> serial num of deal at each day recalculating
+                 return_transaction=True, sell_at_end=False,*args, **kwargs):
 
-        # fee -> Proportion of price to pay as fee when buying/selling assets;
-                 (e.g. 0.5 = 50%, 0.01 = 1%)
-        # initial_budget -> The amount of budget to begin with
-        # n_action_intervals -> Number of actions for Buy and Sell actions;
-                                 The total number of actions is `n_action_intervals` * 2 + 1
-        # deal_col_name -> the column name for cucalate reward used.
-        # feature_names -> list contain the feature columns to use in trading status.
-        # ?day trade option set as default if don't use this need modify
-        """
         assert 0 <= fee <= 1, "fee must be between 0 and 1 (0% to 100%)"
         assert deal_col_name in df.columns, "deal_col not in Dataframe please define the correct column name of which column want to calculate the profit."
         for col in feature_names:
@@ -68,14 +48,9 @@ class TradingEnv:
 
         self.step_len = step_len
         self.fee = fee
-
         self.sample_len = sample_len
-
         self.initial_budget = initial_budget
         self.budget = initial_budget
-
-        self.fluc_div = fluc_div
-        self.gameover = gameover_limit  # todo : 이게 뭘까
         self.return_transaction = return_transaction
         self.sell_at_end = sell_at_end
 
@@ -144,11 +119,65 @@ class TradingEnv:
         self.t_index = 0
         return self.obs_return
 
+    def test_state(self,):  # prepares various state components
+        self.total_fee = 0
+        self.df_sample = self.df
+        
+        self.step_st = 0
+        # define the price to calculate the reward
+        self.price = self.df_sample[self.price_name].as_matrix()
+        # define the observation feature
+        self.obs_features = self.df_sample[self.using_feature].as_matrix()
+        # maybe make market position feature in final feature, set as option
+        self.posi_arr = np.zeros_like(self.price)  # 보유 주식수
+        # position variation
+        self.posi_variation_arr = np.zeros_like(self.posi_arr)  # 보유 주식수의 변화기록
+        # position entry or cover :new_entry->1  increase->2 cover->-1 decrease->-2
+        self.posi_entry_cover_arr = np.zeros_like(self.posi_arr)  # long 포지션인지 short 포지션인지 기록해둠. 아니면 증감
+        # self.position_feature = np.array(self.posi_l[self.step_st:self.step_st+self.obs_len])/(self.max_position*2)+0.5
+
+        self.price_mean_arr = self.price.copy()
+        self.reward_fluctuant_arr = (self.price - self.price_mean_arr) * self.posi_arr  # 현재가 - 보유단가 ; 미실현 손익으로 추정함
+        self.reward_makereal_arr = self.posi_arr.copy()  # bool 로 추정함. 실제 주식처분했는지 아닌지
+        self.reward_arr = self.reward_fluctuant_arr * self.reward_makereal_arr  # (현재가 - 보유단가) * 팔았는지 안팔았는지
+
+        self.budget = self.initial_budget
+
+        self.info = None
+        self.transaction_details = pd.DataFrame()
+
+        # observation part
+        self.obs_state = self.obs_features[-self.obs_len:]
+        self.obs_posi = self.posi_arr[-self.obs_len:]
+        self.obs_posi_var = self.posi_variation_arr[-self.obs_len:]
+        self.obs_posi_entry_cover = self.posi_entry_cover_arr[-self.obs_len:]
+        self.obs_price = self.price[-self.obs_len:]
+        self.obs_price_mean = self.price_mean_arr[-self.obs_len:]
+        self.obs_reward_fluctuant = self.reward_fluctuant_arr[-self.obs_len:]
+        self.obs_makereal = self.reward_makereal_arr[-self.obs_len:]
+        self.obs_reward = self.reward_arr[-self.obs_len:]
+
+        if self.return_transaction:
+            self.obs_return = np.concatenate((self.obs_state,
+                                              self.obs_posi[:, np.newaxis],
+                                              self.obs_posi_var[:, np.newaxis],
+                                              self.obs_posi_entry_cover[:, np.newaxis],
+                                              self.obs_price[:, np.newaxis],
+                                              self.obs_price_mean[:, np.newaxis],
+                                              self.obs_reward_fluctuant[:, np.newaxis],
+                                              self.obs_makereal[:, np.newaxis],
+                                              self.obs_reward[:, np.newaxis]), axis=1)
+        else:
+            self.obs_return = self.obs_state
+
+        self.t_index = 0
+        return self.obs_return
+    
     def _long(self, open_posi, enter_price, current_mkt_position, current_price_mean, action):  # Used once in `step()`
         fee = self.fee * enter_price
         enter_price += fee
         betting_rate = (action + 1) / self.n_action_intervals
-        n_stock = self.budget * betting_rate / enter_price  # 주문할 주식 수
+        n_stock = self.budget * betting_rate / enter_price
         self.total_fee += n_stock * fee
         self.budget -= enter_price * n_stock
         if open_posi:
