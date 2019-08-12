@@ -24,7 +24,7 @@ from arguments import argparser
 # Hyperparameters
 
 args = argparser()
-device = "cuda:"+str(args.device_num)
+device = "cuda:" + str(args.device_num) if torch.cuda.is_available() else "cpu"
 save_interval = 1000
 num_envs = 16
 n_episodes   = args.n_episodes
@@ -71,7 +71,7 @@ def main():
     
     envs = [make_env() for _ in range(num_envs)]
     envs = SubprocVecEnv(envs)
-    model = CNNTradingAgent(num_features=envs.reset().shape[-1]).to(device)
+    model = CNNTradingAgent(num_features=envs.reset().shape[-1], n_actions=2 * n_action_intervals + 1).to(device)
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     print_interval = 10
@@ -116,7 +116,7 @@ def main():
             plt.savefig(os.path.join(save_location,f'plot/{n_epi}_ppo.png'))
             plt.close()
 
-    del env
+    del envs
 
 if __name__ == '__main__':
     main()

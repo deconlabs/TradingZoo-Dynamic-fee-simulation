@@ -3,11 +3,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class CNNTradingAgent(nn.Module):
-    def __init__(self, num_features=15): #todo : num_features 하드코딩 고치기
+    def __init__(self, num_features=15, n_actions=11):
         super().__init__()
 
         self.num_features = num_features
-
+        self.n_actions = n_actions
         # Bottleneck idea from Google's MobileNetV2
         self.conv0 = nn.Sequential(
             nn.LayerNorm([256, 1]),
@@ -45,7 +45,7 @@ class CNNTradingAgent(nn.Module):
         )
         self.glb_avg_pool = nn.AvgPool2d(kernel_size=1)
         # N * 512 * 1 * 1
-        self.conv2 = nn.Conv2d(512, 3, kernel_size=1)
+        self.conv2 = nn.Conv2d(512, self.n_actions, kernel_size=1)
 
         self.softmax = nn.Softmax(dim=-1)
 
@@ -59,7 +59,7 @@ class CNNTradingAgent(nn.Module):
         self.glb_avg_pool.kernel_size = self.glb_avg_pool.stride = tuple(x.shape[-2:])
         x = self.glb_avg_pool(x)
         x = self.conv2(x)
-        x = x.view(-1, 3)
+        x = x.view(-1, self.n_actions)
         x = self.softmax(x)
 
         return x

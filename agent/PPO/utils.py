@@ -6,7 +6,7 @@ from torch.distributions import Categorical
 from arguments import argparser
 
 args = argparser()
-device = "cuda:"+str(args.device_num)
+device = "cuda:" + str(args.device_num) if torch.cuda.is_available() else "cpu"
 
 def states_to_prob(model, states):
     states = torch.stack(states)
@@ -14,7 +14,8 @@ def states_to_prob(model, states):
     pi = model(model_input)
     return pi
 
-def collect_trajectories(envs, model, num_steps, device="cuda:0"):
+
+def collect_trajectories(envs, model, num_steps, ):
     log_probs = []
     values = []
     states = []
@@ -67,7 +68,7 @@ def clipped_surrogate(env,policy, log_old_probs, states, actions, rewards,
     new_probs = states_to_prob(policy, states)
     entropy = Categorical(new_probs).entropy().mean()
 
-    print("new_probs shape ", new_probs.shape)
+    # print("new_probs shape ", new_probs.shape)
     new_probs = new_probs.view(*old_probs.size(), env.action_space).gather(2, actions.unsqueeze(-1)).squeeze(-1)
 
     reweight_factor = new_probs.div(old_probs)
