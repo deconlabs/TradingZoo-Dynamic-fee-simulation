@@ -3,9 +3,10 @@ from scipy import signal
 
 import torch
 from torch.distributions import Categorical
+from arguments import argparser
 
-
-device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
+args = argparser()
+device = "cuda:"+str(args.device_num)
 
 def states_to_prob(model, states):
     states = torch.stack(states)
@@ -13,7 +14,7 @@ def states_to_prob(model, states):
     pi = model(model_input)
     return pi
 
-def collect_trajectories(envs, model, num_steps):
+def collect_trajectories(envs, model, num_steps, device="cuda:0"):
     log_probs = []
     values = []
     states = []
@@ -24,19 +25,14 @@ def collect_trajectories(envs, model, num_steps):
     state = envs.reset()
 
     # buy = True
-    for _ in range(num_steps):  # 경험 모으기 - gpu 쓰는구나 . 하지만 여전히 DataParallel 들어갈 여지는 없어보인다.
-        # -> 아.. state 가 벡터 1개가 아닐 것 같다.. 16개네. gpu 쓸만하다. DataParallel 도 가능할듯?
-
+    for _ in range(num_steps):  
         # probs = model(torch.from_numpy(state).unsqueeze(0).float().to(device))
+        # print("state shape", state.shape)
         probs = model(torch.from_numpy(state).float().to(device))
         dist = Categorical(probs)
         action = dist.sample()
-        # action = torch.randint(0,3,[1])
-        # action = torch.tensor([1 if buy else 2])
-        # buy = not buy
+ 
         next_state, reward, done, _ = envs.step(action.cpu().numpy())
-
-        # next_state, reward, done, _ = envs.step(action.numpy())
         # print("reward after step" , reward)
 
         log_prob = dist.log_prob(action)  # torch.log(dist[action])
@@ -70,6 +66,8 @@ def clipped_surrogate(env,policy, log_old_probs, states, actions, rewards,
     # convert states to policy (or probability)
     new_probs = states_to_prob(policy, states)
     entropy = Categorical(new_probs).entropy().mean()
+
+    print("new_probs shape ", new_probs.shape)
     new_probs = new_probs.view(*old_probs.size(), env.action_space).gather(2, actions.unsqueeze(-1)).squeeze(-1)
 
     reweight_factor = new_probs.div(old_probs)

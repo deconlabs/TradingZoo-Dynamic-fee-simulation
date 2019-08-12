@@ -3,16 +3,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class CNNTradingAgent(nn.Module):
-    def __init__(self, num_features=16):
+    def __init__(self, num_features=15): #todo : num_features 하드코딩 고치기
         super().__init__()
 
         self.num_features = num_features
 
         # Bottleneck idea from Google's MobileNetV2
-
-        # N * n_timesteps * num_features
-        # x.transpose(-1, -2).contiguous().unsqueeze(-1)
-        # N * num_features * n_timesteps * 1
         self.conv0 = nn.Sequential(
             nn.LayerNorm([256, 1]),
             nn.Conv2d(num_features, num_features * 2, kernel_size=(3, 1), stride=(2, 1), padding=(1, 0)),
