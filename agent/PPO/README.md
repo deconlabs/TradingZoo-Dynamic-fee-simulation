@@ -1,4 +1,25 @@
+# PPOTradingAgent
+## What is PPO?
+It's a policy-gradient RL algorithm which shows stable performance imporovement. It has 2 notable traits. First, it doesn't use experience which changes network too much. It clips change which means clipped experience has no gradient thus not updating the network. Second, PPO is an on-policy algorithm, which means it doesn't use previous experience which was gained from outdated network. Instead, it collects new experience in every update.
 
+If you want to know more PPO, please watch this less than 20 min [video](https://youtu.be/5P7I-xPq8u8)
+
+## Training Origininal Agent
+```python3
+python ppo_start.py
+```
+### you can enjoy with pretrained model with Rendering
+```python3
+python test_with_render_dqn.py
+```
+
+## Transfer Learning 
+Agents have differnet risk aversion rate
+```shell
+bash transfer_learn.sh
+```
+
+### Below shows flow of Learning process of PPO agent
 
 ```python
 import random

@@ -8,6 +8,11 @@ If you want to dive more deep into RAINBOW, plz refer this [repo](https://github
 ```python3
 python dqn_start.py
 ```
+### you can enjoy with pretrained model with Rendering
+```python3
+python test_with_render_dqn.py
+```
+
 ## Transfer Learning 
 Agents have differnet risk aversion rate
 ```shell
