@@ -3,25 +3,34 @@ This project is to about finding the optimal __Fee__ mechanism in the Exchange. 
 
 Special thanks to providing nice trading environment https://github.com/Yvictor/TradingGym/
 
-# Roadmap
- ~~Make RL agent which works on [trading gym](https://github.com/Yvictor/TradingGym/)~~
+# Structure
+1. [agent](https://github.com/deconlabs/Binanace_trading_simulation/tree/master/agent)
+    Stores trading agents and specify how to train the agents and how to use them. 
+2. [data](https://github.com/deconlabs/Binanace_trading_simulation/tree/master/data)
+    Stores the historical data to train the agents
+3. [env](https://github.com/deconlabs/Binanace_trading_simulation/tree/master/env)
+    Stores the environment where fee different fee mechanisms applied
 
-~~Put agents in our independent environment where various fee mechanisms are applied~~
+# Method
+ 1. Train RL agents using [trading gym](https://github.com/Yvictor/TradingGym/). 
 
-~~Various Agent characteristics : tolearnce to risk , Different initial Asset~~
+ 2. Transfer agents to different environments where different fee mechanism is applied. 
+ Agents will trained again for 500 episodes more to adapt to each environment. Also, differentiate agents by varying risk_aversion ratio so that some agents prefer risk while others not.
 
+ 3. Observe how agents behave in each environment. Especially watch the total_volume and total_fee from each environment. Derive insights from the observation what characteristics of fee mechanism makes the difference.
+
+
+# Future Plan
 []Provide environment where Limit order available -> lagged matching available to reflect more realistic trading environment
 
-
- 
-# Adopted Fee mechanisms
+# Adopted Fee mechanisms (Could be added more)
 1. With no fee
 2. 0.1% on every Purchase
 3. Elastic fee depending on the trading volume contemporary( Fee increases when trading volume is high and vice versa)
 4. Min(10$, 0.1% * purchase amount)
 
 
-# Used Algorithms
+# Used Algorithms for trading agents
 ## [PPO](https://arxiv.org/abs/1707.06347)
 https://arxiv.org/abs/1707.06347
 ## [Rainbow](https://arxiv.org/abs/1710.02298)
@@ -37,7 +46,7 @@ http://nlp.seas.harvard.edu/2018/04/03/attention.html
 ![rainbow_performance](figs/rainbow_performance.png)
 
 
-# How to use it
+# Brief usage
 
 ```python3
 pip install -r requirements.txt
