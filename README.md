@@ -11,7 +11,7 @@ Special thanks to providing nice trading environment https://github.com/Yvictor/
 3. [env](https://github.com/deconlabs/Binanace_trading_simulation/tree/master/env)
     Stores the environment where fee different fee mechanisms applied
 
-# Method
+# Simulation Method
  1. Train RL agents using [trading gym](https://github.com/Yvictor/TradingGym/). 
 
  2. Transfer agents to different environments where different fee mechanism is applied. 
@@ -31,11 +31,11 @@ Special thanks to providing nice trading environment https://github.com/Yvictor/
 
 
 # Used Algorithms for trading agents
-## [PPO](https://arxiv.org/abs/1707.06347)
+## PPO
 https://arxiv.org/abs/1707.06347
-## [Rainbow](https://arxiv.org/abs/1710.02298)
+## Rainbow
 https://arxiv.org/abs/1710.02298
-## [Attention](http://nlp.seas.harvard.edu/2018/04/03/attention.html)
+## Attention
 http://nlp.seas.harvard.edu/2018/04/03/attention.html
 
 # Performance at trading gym

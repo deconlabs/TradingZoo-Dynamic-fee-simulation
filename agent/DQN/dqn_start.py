@@ -15,8 +15,8 @@ import DQNTradingAgent.dqn_agent as dqn_agent
 from custom_hyperparameters import hyperparams
 from arguments import argparser
 
-args = argparser()
-# device_num, save_num, risk_aversion, n_episodes
+args = argparser() # device_num, save_num, risk_aversion, n_episodes
+torch.cuda.manual_seed_all(7)
 
 device = torch.device("cuda:{}".format(args.device_num))
 dqn_agent.set_device(device)

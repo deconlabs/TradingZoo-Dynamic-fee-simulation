@@ -70,9 +70,9 @@ def main():
     for i_episode in range(n_episodes):
         n_epi +=1
         
-        if (i_episode + 1) % 500 == 0:
-            sample_len += 480
-            env.sample_len = sample_len
+        # if (i_episode + 1) % 500 == 0:
+        #     sample_len += 480
+        #     env.sample_len = sample_len
 
         state = env.reset()
         score = 0.

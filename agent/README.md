@@ -7,7 +7,6 @@ Each directory continas explanation how to use it
 ### Rainbow
 Off-policy learning 
 Replay memory
-
 nice explanation [here](https://github.com/Curt-Park/rainbow-is-all-you-need)
 
 ### PPO
@@ -20,3 +19,6 @@ Q , K, V
 MultiHeadedAttention
 
 Each layer determines how much importance each feature has
+
+### Performance of each trading agents
+![performanceTogether](../figs/TradingAgentPerformance.png)
