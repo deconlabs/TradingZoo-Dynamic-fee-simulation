@@ -11,7 +11,7 @@ Special thanks to providing nice trading environment https://github.com/Yvictor/
 3. [env](https://github.com/deconlabs/Binanace_trading_simulation/tree/master/env)
     Stores the environment where fee different fee mechanisms applied
 
-# Method
+# Simulation Method
  1. Train RL agents using [trading gym](https://github.com/Yvictor/TradingGym/). 
 
  2. Transfer agents to different environments where different fee mechanism is applied. 
@@ -31,19 +31,16 @@ Special thanks to providing nice trading environment https://github.com/Yvictor/
 
 
 # Used Algorithms for trading agents
-## [PPO](https://arxiv.org/abs/1707.06347)
+## PPO
 https://arxiv.org/abs/1707.06347
-## [Rainbow](https://arxiv.org/abs/1710.02298)
+## Rainbow
 https://arxiv.org/abs/1710.02298
-## [Attention](http://nlp.seas.harvard.edu/2018/04/03/attention.html)
+## Attention
 http://nlp.seas.harvard.edu/2018/04/03/attention.html
 
 # Performance at trading gym
+![Performance](figs/TradingAgentPerformance.png)
 
-### PPO
-![ppo_performance](figs/ppo_performance.png)
-### Rainbow
-![rainbow_performance](figs/rainbow_performance.png)
 
 
 # Brief usage
@@ -66,6 +63,16 @@ python dqn_start.py
 ![total_fee](figs/total_fee.png)
 ![total_volume](figs/total_volume.png)
 
-
 ## Performance
 ![gif](figs/ezgif.com-optimize.gif)
+
+### How Data feature affects TradingAgent's Decision
+Using [integrated_gradient](https://medium.com/@kartikeyabhardwaj98/integrated-gradients-for-deep-neural-networks-c114e3968eae), we can interpret how agents observe the data.
+X axis represents actions and Y axis represents the feature of data. The graph shows how the feature of data affects the action decision of trading agent. You can see that the weight distribution of feature is different depending on the training algorithms.
+
+PPO
+![PPOIG](figs/ppo_IG.png)
+RAINBOW
+![Rainbow](figs/rainbow_IG.png)
+Attention
+![AttentionIG](figs/attention_IG.png)

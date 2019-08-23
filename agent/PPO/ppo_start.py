@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
-
 import os
 import random
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 import torch
 import torch.nn as nn
@@ -38,11 +36,6 @@ init_budget = 1
 df = pd.read_hdf('dataset/binance_data_train.h5', 'STW')
 df.fillna(method='ffill', inplace=True)
 
-
-# In[4]:
-
-
-
 save_location = 'saves/Original/{}'.format(args.save_num)
 if not os.path.exists(save_location):
     os.makedirs(save_location)
@@ -58,8 +51,6 @@ def make_env():
 
     return _thunk
 
-
-
 def main():
     learning_rate = 0.001
     discount = 0.995
@@ -68,7 +59,6 @@ def main():
     K_epoch = 3
     num_steps = 128
 
-    
     envs = [make_env() for _ in range(num_envs)]
     envs = SubprocVecEnv(envs)
     model = CNNTradingAgent(num_features=envs.reset().shape[-1], n_actions=2 * n_action_intervals + 1).to(device)
@@ -109,12 +99,12 @@ def main():
 
         if n_epi % save_interval ==0:
             torch.save(model.state_dict(), os.path.join(save_location,f'TradingGym_{n_epi}.pth'))
-            torch.save(scores_list, os.path.join(save_location,f"plot/{n_epi}_scores.pth"))
-            plt.plot(scores_list)
-            plt.title("Reward")
-            plt.grid(True)
-            plt.savefig(os.path.join(save_location,f'plot/{n_epi}_ppo.png'))
-            plt.close()
+            torch.save(scores_list, os.path.join(save_location,f"{n_epi}_scores.pth"))
+            # plt.plot(scores_list)
+            # plt.title("Reward")
+            # plt.grid(True)
+            # plt.savefig(os.path.join(save_location,f'{n_epi}_ppo.png'))
+            # plt.close()
 
     del envs
 
