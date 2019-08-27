@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-def fnRSI(self,m_Df, m_N=15):
+def fnRSI(m_Df, m_N=15):
 
     U = np.where(m_Df.diff(1) > 0, m_Df.diff(1), 0)
     D = np.where(m_Df.diff(1) < 0, m_Df.diff(1) *(-1), 0)
