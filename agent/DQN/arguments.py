@@ -24,6 +24,8 @@ def argparser():
     
     parser.add_argument('--render', type=bool, default=False,
                         help='want to render?')
+    parser.add_argument('--hand_type', type=bool, default=True,
+                        help='want to hand type action?')
 
     args = parser.parse_args()
     return args

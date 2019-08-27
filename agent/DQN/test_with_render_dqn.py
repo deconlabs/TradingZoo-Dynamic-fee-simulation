@@ -48,8 +48,10 @@ agent.qnetwork_local.eval()
 done = False
 
 while not done:
-    
-    action = int(agent.act(state))
+    if args.hand_type:
+        action = int(input())
+    else:
+        action = int(agent.act(state))
     state, reward, done, info = env.step(action)
     
     print("Action:", action)
