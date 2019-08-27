@@ -7,12 +7,28 @@ import numpy as np
 import pandas as pd
 
 
+def get_stochastic(df, n=15, m=5, t=3):
+            # n일중 최고가
+            ndays_high = df.h.rolling(window=n, min_periods=1).max()
+            # n일중 최저가
+            ndays_low = df.l.rolling(window=n, min_periods=1).min()
+
+            # Fast%K 계산
+            kdj_k = ((df.c - ndays_low) / (ndays_high - ndays_low))
+            # Fast%D (=Slow%K) 계산
+            kdj_d = kdj_k.ewm(span=m).mean()
+            # Slow%D 계산
+            kdj_j = kdj_d.ewm(span=t).mean()
+
+            return kdj_j.mean()
+
+
 class TradingEnv:
     def __init__(self, custom_args, env_id, obs_data_len, step_len, sample_len,
                  df, fee, initial_budget, n_action_intervals, deal_col_name='c',
                  feature_names=['c', 'v'],
                  return_transaction=True, sell_at_end=False,
-                 fluc_div=100.0, gameover_limit=5,
+                 fluc_div=100.0, gameover_limit=5,max_fee_rate=.01,
                  *args, **kwargs):
         """
         # need deal price as essential and specified the df format
@@ -66,6 +82,8 @@ class TradingEnv:
         self.price_name = deal_col_name
 
         self.step_len = step_len
+        
+        self.max_fee_rate = max_fee_rate
         self.fee_rate = fee
 
         self.sample_len = sample_len
@@ -118,7 +136,7 @@ class TradingEnv:
         self.transaction_details = pd.DataFrame()
 
         # observation part
-        self.previous_volume = self.df_sample['v'].iloc[self.step_st: self.step_st + self.obs_len]
+        self.previous_stoch = get_stochastic(self.df_sample.iloc[self.step_st: self.step_st + self.obs_len])
         self.obs_state = self.obs_features[self.step_st: self.step_st + self.obs_len]
         self.obs_posi = self.posi_arr[self.step_st: self.step_st + self.obs_len]
         self.obs_posi_var = self.posi_variation_arr[self.step_st: self.step_st + self.obs_len]
@@ -187,20 +205,6 @@ class TradingEnv:
         self.chg_posi[:] = current_mkt_position
         self.chg_price_mean[:] = current_price_mean
      
-    def get_stochastic(self,df, n=15, m=5, t=3):
-            # n일중 최고가
-            ndays_high = df.h.rolling(window=n, min_periods=1).max()
-            # n일중 최저가
-            ndays_low = df.l.rolling(window=n, min_periods=1).min()
-
-            # Fast%K 계산
-            kdj_k = ((df.c - ndays_low) / (ndays_high - ndays_low))
-            # Fast%D (=Slow%K) 계산
-            kdj_d = kdj_k.ewm(span=m).mean()
-            # Slow%D 계산
-            kdj_j = kdj_d.ewm(span=t).mean()*0.1
-
-            return kdj_j.iloc[-1]
     def step(self, action):
         current_index = self.step_st + self.obs_len - 1
         current_price_mean = self.price_mean_arr[current_index]
@@ -231,9 +235,10 @@ class TradingEnv:
         self.chg_reward = self.obs_reward[-self.step_len:]
         
        
-        
-        self.fee_rate=self.get_stochastic(self.df_sample.iloc[self.step_st: self.step_st + self.obs_len])
+        present_stoch=get_stochastic(self.df_sample.iloc[self.step_st: self.step_st + self.obs_len])
 
+        self.fee_rate=np.clip(self.fee_rate*present_stoch/self.previous_stoch,0,self.max_fee_rate)
+        
         done = False
         if self.step_st + self.obs_len + self.step_len >= len(self.price):
             done = True

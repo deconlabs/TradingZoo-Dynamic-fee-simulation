@@ -93,7 +93,7 @@ def main():
 
         if n_epi % print_interval == 0 and n_epi != 0:
             print_str = "# of episode: {:d}, avg score: {:.4f}\n Actions: {}".format(n_epi, sum(scores_list[-print_interval:]) / print_interval, np.array(actions))
-            print(print_str,next_state[-1])
+            print(print_str,'fee_rate: 'next_state[-1][-1])
             with open(os.path.join(save_location, "output_log.txt"), mode='a') as f:
                 f.write(print_str + '\n')
 
