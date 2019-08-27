@@ -77,6 +77,7 @@ class TradingEnv:
 
         self.step_len = step_len
         self.fee_rate = fee
+        self.max_fee_rate = max_fee_rate
 
         self.sample_len = sample_len
 
