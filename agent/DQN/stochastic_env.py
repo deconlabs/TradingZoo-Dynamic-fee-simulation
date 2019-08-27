@@ -200,7 +200,7 @@ class TradingEnv:
             # Slow%D 계산
             kdj_j = kdj_d.ewm(span=t).mean()*0.1
 
-            return kdj_j[-1]
+            return kdj_j.iloc[-1]
     def step(self, action):
         current_index = self.step_st + self.obs_len - 1
         current_price_mean = self.price_mean_arr[current_index]
