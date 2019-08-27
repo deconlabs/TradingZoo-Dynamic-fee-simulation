@@ -186,6 +186,22 @@ class TradingEnv:
     def _stayon(self, current_price_mean, current_mkt_position):  # Used once in `step()`
         self.chg_posi[:] = current_mkt_position
         self.chg_price_mean[:] = current_price_mean
+        
+        
+    def get_stochastic(self,df, n=15, m=5, t=3):
+            # n일중 최고가
+            ndays_high = df.h.rolling(window=n, min_periods=1).max()
+            # n일중 최저가
+            ndays_low = df.l.rolling(window=n, min_periods=1).min()
+
+            # Fast%K 계산
+            kdj_k = ((df.c - ndays_low) / (ndays_high - ndays_low))
+            # Fast%D (=Slow%K) 계산
+            kdj_d = kdj_k.ewm(span=m).mean()
+            # Slow%D 계산
+            kdj_j = kdj_d.ewm(span=t).mean()*0.1
+
+            return kdj_j[-1]
 
     def step(self, action):
         current_index = self.step_st + self.obs_len - 1
@@ -216,20 +232,7 @@ class TradingEnv:
         self.chg_makereal = self.obs_makereal[-self.step_len:]
         self.chg_reward = self.obs_reward[-self.step_len:]
         
-        def get_stochastic(self,df, n=15, m=5, t=3):
-            # n일중 최고가
-            ndays_high = df.h.rolling(window=n, min_periods=1).max()
-            # n일중 최저가
-            ndays_low = df.l.rolling(window=n, min_periods=1).min()
-
-            # Fast%K 계산
-            kdj_k = ((df.c - ndays_low) / (ndays_high - ndays_low))
-            # Fast%D (=Slow%K) 계산
-            kdj_d = kdj_k.ewm(span=m).mean()
-            # Slow%D 계산
-            kdj_j = kdj_d.ewm(span=t).mean()*0.1
-
-            return kdj_j[-1]
+        
         
         self.fee_rate=get_stochastic(self.df_sample.iloc[self.step_st: self.step_st + self.obs_len])
 
