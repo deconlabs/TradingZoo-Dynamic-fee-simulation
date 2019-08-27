@@ -209,7 +209,7 @@ class TradingEnv:
 
         AU = pd.DataFrame(U).rolling( window=m_N, min_periods=m_N).mean()
         AD = pd.DataFrame(D).rolling( window=m_N, min_periods=m_N).mean()
-        RSI = AU.div(AD+AU) *0.1
+        RSI = AU.div(AD+AU)[0] *0.1
         return RSI.iloc[-1]
     
     def step(self, action):
