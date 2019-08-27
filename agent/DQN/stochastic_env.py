@@ -253,10 +253,10 @@ class TradingEnv:
                                                      self.price_mean_arr,
                                                      self.reward_fluctuant_arr,
                                                      self.reward_makereal_arr,
-                                                     self.reward_arr],
+                                                     self.reward_arr,self.fee_rate],
                                                     index=['position', 'position_variation', 'entry_cover',
                                                            'price_mean', 'reward_fluctuant', 'reward_makereal',
-                                                           'reward'],
+                                                           'reward','fee_rate'],
                                                     columns=self.df_sample.index).T
             self.info = self.df_sample.join(self.transaction_details)
 
