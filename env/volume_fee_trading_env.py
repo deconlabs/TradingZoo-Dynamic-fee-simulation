@@ -234,7 +234,7 @@ class TradingEnv:
         
         
         
-        self.fee_rate=get_stochastic(self.df_sample.iloc[self.step_st: self.step_st + self.obs_len])
+        self.fee_rate=self.get_stochastic(self.df_sample.iloc[self.step_st: self.step_st + self.obs_len])
 
         done = False
         if self.step_st + self.obs_len + self.step_len >= len(self.price):
