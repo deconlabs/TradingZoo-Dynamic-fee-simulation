@@ -22,7 +22,7 @@ def get_stochastic(df, n=15, m=5, t=3):
             return kdj_j.mean()
 
 def fnRSI(m_Df, m_N=15):
-    m_Df=m_DF.c
+    m_Df=m_Df.c
     U = np.where(m_Df.diff(1) > 0, m_Df.diff(1), 0)
     D = np.where(m_Df.diff(1) < 0, m_Df.diff(1) *(-1), 0)
 
