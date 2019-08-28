@@ -11,7 +11,6 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 from custom_trading_env import TradingEnv
-from utils import device
 import DQNTradingAgent.dqn_agent as dqn_agent
 from custom_hyperparameters import hyperparams
 from arguments import argparser
@@ -22,9 +21,9 @@ args = argparser()
 device = torch.device("cuda:{}".format(args.device_num))
 dqn_agent.set_device(device)
 
-load_location = 'saves/{}'.format(args.save_num)
+load_location = 'saves/Original/{}'.format(args.save_num)
 
-save_location = 'saves/transfer0/{}/{}'.format(args.fee , args.save_num)
+save_location = 'saves/transfer/{}/{}'.format(args.fee , args.save_num)
 
 if not os.path.exists(save_location):
     os.makedirs(save_location)
@@ -68,11 +67,9 @@ def main():
     agent.beta = beta
 
     scores_list = []
-    loss_list = []
-    n_epi = 0
+    
+    
     for i_episode in range(n_episodes):
-        n_epi +=1
-
         state = env.reset()
         score = 0.
         actions = []
@@ -102,14 +99,14 @@ def main():
 
         scores_list.append(score)
 
-        if n_epi % print_interval == 0 and n_epi != 0:
-            print_str = "# of episode: {:d}, avg score: {:.4f}\n  Actions: {}".format(n_epi, sum(scores_list[-print_interval:]) / print_interval, np.array(actions))
+        if i_episode % print_interval == 0 and i_episode != 0:
+            print_str = "# of episode: {:d}, avg score: {:.4f}\n  Actions: {}".format(i_episode, sum(scores_list[-print_interval:]) / print_interval, np.array(actions))
             print(print_str)
             # with open(os.path.join(save_location, "output_log.txt"), mode='a') as f:
             #     f.write(print_str + '\n')
 
-        if n_epi % save_interval == 0:
-            torch.save(agent.qnetwork_local.state_dict(), os.path.join(save_location, 'TradingGym_Rainbow_{:d}.pth'.format(n_epi)))
+        if i_episode % save_interval == 0:
+            torch.save(agent.qnetwork_local.state_dict(), os.path.join(save_location, 'TradingGym_Rainbow_{:d}.pth'.format(i_episode)))
             torch.save(scores_list, os.path.join(save_location, 'scores.pth'))
 
     del env

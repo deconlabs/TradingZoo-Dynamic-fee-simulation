@@ -1,21 +1,22 @@
+import os
+import importlib
 import random
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
-import os
+import matplotlib.pyplot as plt
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from custom_trading_env import TradingEnv
 import DQNTradingAgent.dqn_agent as dqn_agent
 from custom_hyperparameters import hyperparams
 from arguments import argparser
 
 args = argparser() # device_num, save_num, risk_aversion, n_episodes
+env_module = importlib.import_module(f'envs.trading_env_{args.environment}')
 torch.cuda.manual_seed_all(7)
 
 device = torch.device("cuda:{}".format(args.device_num))
@@ -46,7 +47,7 @@ df.fillna(method='ffill', inplace=True)
 
 def main():
 
-    env = TradingEnv(custom_args=args, env_id='custom_trading_env', obs_data_len=obs_data_len, step_len=step_len, sample_len=sample_len,
+    env = env_module.TradingEnv(custom_args=args, env_id='custom_trading_env', obs_data_len=obs_data_len, step_len=step_len, sample_len=sample_len,
                            df=df, fee=0.001, initial_budget=1, n_action_intervals=n_action_intervals, deal_col_name='c', sell_at_end=True,
                            feature_names=['o', 'h','l','c','v',
                                           'num_trades', 'taker_base_vol'])
@@ -57,12 +58,10 @@ def main():
     agent.beta = beta
 
     scores_list = []
-    loss_list = []
-    n_epi = 0
+    
+    
     # for n_epi in range(10000):  # 게임 1만판 진행
-    for i_episode in range(n_episodes):
-        n_epi +=1
-
+    for n_epi in range(n_episodes):
         state = env.reset()
         score = 0.
         actions = []
@@ -71,7 +70,7 @@ def main():
         while True:
             action = int(agent.act(state, eps=0.))
             actions.append(action)
-            next_state, reward, done, _ = env.step(action)
+            next_state, reward, done, _ , fee_rate = env.step(action)
 
             rewards.append(reward)
             score += reward
@@ -92,7 +91,7 @@ def main():
         scores_list.append(score)
 
         if n_epi % print_interval == 0 and n_epi != 0:
-            print_str = "# of episode: {:d}, avg score: {:.4f}\n  Actions: {}".format(n_epi, sum(scores_list[-print_interval:]) / print_interval, np.array(actions))
+            print_str = "# of episode: {:d}, avg score: {:.4f}\n  Actions: {} fee_rate: {:.6f}".format(n_epi, sum(scores_list[-print_interval:]) / print_interval, np.array(actions), fee_rate)
             print(print_str)
             with open(os.path.join(save_location, "output_log.txt"), mode='a') as f:
                 f.write(print_str + '\n')
