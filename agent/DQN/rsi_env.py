@@ -6,8 +6,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-def fnRSI(m_Df, m_N=15):
+def get_stochastic(df, n=15, m=5, t=3):
+            # n일중 최고가
+            ndays_high = df.h.rolling(window=n, min_periods=1).max()
+            # n일중 최저가
+            ndays_low = df.l.rolling(window=n, min_periods=1).min()
 
+            # Fast%K 계산
+            kdj_k = ((df.c - ndays_low) / (ndays_high - ndays_low))
+            # Fast%D (=Slow%K) 계산
+            kdj_d = kdj_k.ewm(span=m).mean()
+            # Slow%D 계산
+            kdj_j = kdj_d.ewm(span=t).mean()
+
+            return kdj_j.mean()
+
+def fnRSI(m_Df, m_N=15):
+    m_Df=m_DF.c
     U = np.where(m_Df.diff(1) > 0, m_Df.diff(1), 0)
     D = np.where(m_Df.diff(1) < 0, m_Df.diff(1) *(-1), 0)
 
@@ -47,7 +62,12 @@ class TradingEnv:
         assert deal_col_name in df.columns, "deal_col not in Dataframe please define the correct column name of which column want to calculate the profit."
         for col in feature_names:
             assert col in df.columns, "feature name: {} not in Dataframe.".format(col)
-
+        
+        
+        self.env_dic={'stochastic':get_stochastic,'fnRSI':fnRSI}
+        
+        self.env=self.env_dic[custom_args.env]    
+         
         self.custom_args = custom_args
         self.total_fee = 0
 
@@ -129,7 +149,7 @@ class TradingEnv:
         self.transaction_details = pd.DataFrame()
 
         # observation part
-        self.previous_rsi = fnRSI(self.df_sample.iloc[self.step_st: self.step_st + self.obs_len].c)
+        self.previous= self.env(self.df_sample.iloc[self.step_st: self.step_st + self.obs_len])
         self.df_sample['v'].iloc[self.step_st: self.step_st + self.obs_len]
         self.obs_state = self.obs_features[self.step_st: self.step_st + self.obs_len]
         self.obs_posi = self.posi_arr[self.step_st: self.step_st + self.obs_len]
@@ -230,8 +250,8 @@ class TradingEnv:
         self.chg_reward = self.obs_reward[-self.step_len:]
         
        
-        present_rsi=fnRSI(self.df_sample.iloc[self.step_st: self.step_st + self.obs_len].c)
-        self.fee_rate=np.clip(self.fee_rate*present_rsi/self.previous_rsi,0,self.max_fee_rate)
+        present=self.env(self.df_sample.iloc[self.step_st: self.step_st + self.obs_len])
+        self.fee_rate=np.clip(self.fee_rate*present/self.previous,0,self.max_fee_rate)
 
         done = False
         if self.step_st + self.obs_len + self.step_len >= len(self.price):
