@@ -27,7 +27,7 @@ def argparser():
     parser.add_argument('--hand_type', type=bool, default=True,
                         help='want to hand type action?')
     
-    parser.add_arguent('--env_type',default='stochastic',type=str,help='what fee mech?')
+    parser.add_argument('--env',default='stochastic',type=str,help='what fee mech?')
     
 
     args = parser.parse_args()
