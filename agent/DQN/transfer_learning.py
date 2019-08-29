@@ -10,20 +10,20 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from custom_trading_env import TradingEnv
 import DQNTradingAgent.dqn_agent as dqn_agent
 from custom_hyperparameters import hyperparams
 from arguments import argparser
 
 args = argparser()
 # device_num, save_num, risk_aversion, n_episodes, fee
+env_module = importlib.import_module(f'envs.trading_env_{args.environment}')
 
 device = torch.device("cuda:{}".format(args.device_num))
 dqn_agent.set_device(device)
 
 load_location = 'saves/Original/{}'.format(args.save_num)
 
-save_location = 'saves/transfer/{}/{}'.format(args.fee , args.save_num)
+save_location = 'saves/transfer/{}/{}'.format(args.environment , args.save_num)
 
 if not os.path.exists(save_location):
     os.makedirs(save_location)
@@ -54,12 +54,12 @@ df.fillna(method='ffill', inplace=True)
 
 def main():
 
-    env = TradingEnv(custom_args=args, env_id='custom_trading_env', obs_data_len=obs_data_len, step_len=step_len, sample_len=sample_len,
+    env = env_module.TradingEnv(custom_args=args, env_id='custom_trading_env', obs_data_len=obs_data_len, step_len=step_len, sample_len=sample_len,
                            df=df, fee=fee, initial_budget=1, n_action_intervals=n_action_intervals, deal_col_name='c', sell_at_end=True,
                            feature_names=['o', 'h','l','c','v',
                                           'num_trades', 'taker_base_vol'])
     agent = dqn_agent.Agent(action_size=2 * n_action_intervals + 1, obs_len=obs_data_len, num_features=env.reset().shape[-1], **hyperparams)
-    agent.qnetwork_local.load_state_dict(torch.load(os.path.join(load_location, 'TradingGym_Rainbow_3000.pth'), map_location=device))
+    agent.qnetwork_local.load_state_dict(torch.load(os.path.join(load_location, 'TradingGym_Rainbow_1000.pth'), map_location=device))
     agent.qnetwork_local.to(device)
 
     beta = 0.4

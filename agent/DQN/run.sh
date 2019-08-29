@@ -7,7 +7,7 @@ num_workers=30
 
 for ((i=$start_from;i<$((start_from+num_workers));i++))
 do
-    tmux new-session -s $i$env -d "/home/jeffrey/anaconda3/envs/RL/bin/python dqn_start.py --device_num=$(($i%4)) --save_num=$i --risk_aversion=$i --n_episodes=1000 --environment=default; read"
+    tmux new-session -s $i$env -d "/home/jeffrey/anaconda3/envs/RL/bin/python -i dqn_start.py --device_num=$(($i%4)) --save_num=$i --risk_aversion=$i --n_episodes=1000 --environment=default; read"
 done
 
 

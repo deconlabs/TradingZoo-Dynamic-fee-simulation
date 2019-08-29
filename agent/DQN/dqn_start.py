@@ -61,7 +61,7 @@ def main():
     
     
     # for n_epi in range(10000):  # 게임 1만판 진행
-    for n_epi in range(n_episodes):
+    for n_epi in range(1,n_episodes+1):
         state = env.reset()
         score = 0.
         actions = []
