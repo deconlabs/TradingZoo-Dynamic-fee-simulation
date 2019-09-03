@@ -22,7 +22,7 @@ args = argparser()
 device = torch.device("cuda:{}".format(args.device_num))
 dqn_agent.set_device(device)
 
-save_location = 'saves/Original/{}'.format(args.save_num)
+save_location = 'saves/{}'.format(args.save_num)
 
 if not os.path.exists(save_location):
     os.makedirs(save_location)

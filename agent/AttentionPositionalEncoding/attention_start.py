@@ -67,7 +67,7 @@ def main():
     loss_list = []
     n_epi = 0
     # for n_epi in range(10000):  # 게임 1만판 진행
-    for i_episode in range(n_episodes):
+    for i_episode in range(1,n_episodes+1):
         n_epi +=1
         
         # if (i_episode + 1) % 500 == 0:
