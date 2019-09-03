@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 import os
+import importlib
 
 import torch
 import torch.nn as nn
@@ -67,8 +68,7 @@ def main():
     agent.beta = beta
 
     scores_list = []
-    
-    
+        
     for i_episode in range(n_episodes):
         state = env.reset()
         score = 0.
@@ -78,8 +78,8 @@ def main():
         # for t in range(num_steps):
         while True:
             action = int(agent.act(state, eps=0.))
-            next_state, reward, done, _ = env.step(action)
-
+            next_state, reward, done, _ ,fee_rate = env.step(action)
+           
             rewards.append(reward)
             score += reward
             if reward < 0:
@@ -100,13 +100,14 @@ def main():
         scores_list.append(score)
 
         if i_episode % print_interval == 0 and i_episode != 0:
-            print_str = "# of episode: {:d}, avg score: {:.4f}\n  Actions: {}".format(i_episode, sum(scores_list[-print_interval:]) / print_interval, np.array(actions))
+            print_str = "# of episode: {:d}, avg score: {:.4f}\n  Actions: {} \n fee rate: {}".format(i_episode, sum(scores_list[-print_interval:]) / print_interval, np.array(actions), fee_rate)
             print(print_str)
             # with open(os.path.join(save_location, "output_log.txt"), mode='a') as f:
             #     f.write(print_str + '\n')
 
         if i_episode % save_interval == 0:
             torch.save(agent.qnetwork_local.state_dict(), os.path.join(save_location, 'TradingGym_Rainbow_{:d}.pth'.format(i_episode)))
+            torch.save(scores_list, os.path.join(save_location, 'scores.pth'))
             torch.save(scores_list, os.path.join(save_location, 'scores.pth'))
 
     del env
