@@ -1,3 +1,7 @@
+<img src="figs/Decon.png" width="25%" height="25%">  
+
+![decon](https://img.shields.io/badge/decon-blockchian-blue) ![python](https://img.shields.io/badge/python-3.6-critical) ![MIT](https://img.shields.io/badge/license-MIT-brightgreen)
+
 # Binanace_trading_simulation
 This project is to about finding the optimal __Fee__ mechanism in the Exchange. RL agents acts as people under certain Fee policies. We observe how RL agents's behavior changes with Fee mechanism changes. Fee mechanism would change total trade volume and total fee. This project is maintained as Binance Fellowship.
 

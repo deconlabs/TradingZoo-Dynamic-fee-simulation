@@ -29,7 +29,7 @@ class TradingEnv:
                  df, fee, initial_budget, n_action_intervals, deal_col_name='c',
                  feature_names=['c', 'v'],
                  return_transaction=True, sell_at_end=False,
-                 fluc_div=100.0, gameover_limit=5,max_fee_rate=.01,min_fee_rate=.0001
+                 fluc_div=100.0, gameover_limit=5,max_fee_rate=.01,min_fee_rate=.0001,
                  *args, **kwargs):
         """
         # need deal price as essential and specified the df format
@@ -294,7 +294,7 @@ class TradingEnv:
         else:
             self.obs_return = self.obs_state
 
-        return self.obs_return, self.chg_reward[0], done, self.info
+        return self.obs_return, self.chg_reward[0], done, self.info, self.fee_rate
 
     # =====================================================Rendering Stuff=====================================================#
 

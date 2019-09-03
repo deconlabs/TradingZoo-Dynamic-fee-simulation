@@ -288,7 +288,7 @@ class TradingEnv:
         else:
             self.obs_return = self.obs_state
 
-        return self.obs_return, self.chg_reward[0], done, self.info
+        return self.obs_return, self.chg_reward[0], done, self.info, self.fee_rate
 
     # =====================================================Rendering Stuff=====================================================#
 
