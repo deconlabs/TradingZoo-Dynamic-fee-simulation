@@ -60,7 +60,7 @@ class TradingEnv:
         self.transaction_details = pd.DataFrame()
         self.logger.info('Making new env: {}'.format(env_id))
 
-    def _random_choice_section(self):  # todo : 마치 배치 뽑는거 같은건가?
+    def _random_choice_section(self): 
         begin_point = np.random.randint(len(self.df) - self.sample_len + 1)
         end_point = begin_point + self.sample_len
         df_section = self.df.iloc[begin_point: end_point]
@@ -75,17 +75,17 @@ class TradingEnv:
         # define the observation feature
         self.obs_features = self.df_sample[self.using_feature].as_matrix()
         # maybe make market position feature in final feature, set as option
-        self.posi_arr = np.zeros_like(self.price)  # 보유 주식수
+        self.posi_arr = np.zeros_like(self.price)  # numbers of shares held
         # position variation
-        self.posi_variation_arr = np.zeros_like(self.posi_arr)  # 보유 주식수의 변화기록
+        self.posi_variation_arr = np.zeros_like(self.posi_arr)  # change of shared held
         # position entry or cover :new_entry->1  increase->2 cover->-1 decrease->-2
-        self.posi_entry_cover_arr = np.zeros_like(self.posi_arr)  # long 포지션인지 short 포지션인지 기록해둠. 아니면 증감
+        self.posi_entry_cover_arr = np.zeros_like(self.posi_arr)  # indicates whether it is long or short position
         # self.position_feature = np.array(self.posi_l[self.step_st:self.step_st+self.obs_len])/(self.max_position*2)+0.5
 
         self.price_mean_arr = self.price.copy()
-        self.reward_fluctuant_arr = (self.price - self.price_mean_arr) * self.posi_arr  # 현재가 - 보유단가 ; 미실현 손익으로 추정함
-        self.reward_makereal_arr = self.posi_arr.copy()  # bool 로 추정함. 실제 주식처분했는지 아닌지
-        self.reward_arr = self.reward_fluctuant_arr * self.reward_makereal_arr  # (현재가 - 보유단가) * 팔았는지 안팔았는지
+        self.reward_fluctuant_arr = (self.price - self.price_mean_arr) * self.posi_arr  # current price - average purchase price ; unrealized gain
+        self.reward_makereal_arr = self.posi_arr.copy()   # wheter the stock is sold or not(bool)
+        self.reward_arr = self.reward_fluctuant_arr * self.reward_makereal_arr  #(current price - average purchase price) * (whether sold or not -> bool)
 
         self.budget = self.initial_budget
 
@@ -129,17 +129,17 @@ class TradingEnv:
         # define the observation feature
         self.obs_features = self.df_sample[self.using_feature].as_matrix()
         # maybe make market position feature in final feature, set as option
-        self.posi_arr = np.zeros_like(self.price)  # 보유 주식수
+        self.posi_arr = np.zeros_like(self.price)  # numbers of shares held
         # position variation
-        self.posi_variation_arr = np.zeros_like(self.posi_arr)  # 보유 주식수의 변화기록
+        self.posi_variation_arr = np.zeros_like(self.posi_arr)  # change of shared held
         # position entry or cover :new_entry->1  increase->2 cover->-1 decrease->-2
-        self.posi_entry_cover_arr = np.zeros_like(self.posi_arr)  # long 포지션인지 short 포지션인지 기록해둠. 아니면 증감
+        self.posi_entry_cover_arr = np.zeros_like(self.posi_arr)   # indicates whether it is long or short position
         # self.position_feature = np.array(self.posi_l[self.step_st:self.step_st+self.obs_len])/(self.max_position*2)+0.5
 
         self.price_mean_arr = self.price.copy()
-        self.reward_fluctuant_arr = (self.price - self.price_mean_arr) * self.posi_arr  # 현재가 - 보유단가 ; 미실현 손익으로 추정함
-        self.reward_makereal_arr = self.posi_arr.copy()  # bool 로 추정함. 실제 주식처분했는지 아닌지
-        self.reward_arr = self.reward_fluctuant_arr * self.reward_makereal_arr  # (현재가 - 보유단가) * 팔았는지 안팔았는지
+        self.reward_fluctuant_arr = (self.price - self.price_mean_arr) * self.posi_arr  #  current price - average purchase price ; unrealized gain
+        self.reward_makereal_arr = self.posi_arr.copy()  # wheter the stock is sold or not(bool)
+        self.reward_arr = self.reward_fluctuant_arr * self.reward_makereal_arr  # (current price - average purchase price) * (whether sold or not -> bool)
 
         self.budget = self.initial_budget
 
@@ -194,7 +194,7 @@ class TradingEnv:
             self.chg_posi_entry_cover[:1] = 2
 
     def _long_cover(self, current_price_mean, current_mkt_position, action):  # Used once in `step()`
-        # n_stock = (보유주식 개수) * (비율(액션))
+        # n_stock = (number of shared held) * (ratio(action))
         n_stock = current_mkt_position * (action - self.hold_action) / self.n_action_intervals
         # n_stock = min(action - self.hold_action, current_mkt_position)
         total_value = self.chg_price[0] * n_stock
@@ -267,7 +267,7 @@ class TradingEnv:
             self.info = self.df_sample.join(self.transaction_details)
 
         # use next tick, maybe choice avg in first 10 tick will be better to real backtest
-        # action 이 0~20으로 들어온다고 가정하겠음 [0,9] -> buy , 10 = hold [11,20] -> sell
+        # If action value is between 0~20, [0,9] -> buy , 10 = hold [11,20] -> sell
         # self.hold_action = 10
         # self.actions = [-1, -0.9, -0.8, ... , -0.1, 0, 0.1, ... , 0.8, 0.9, 1]
 
