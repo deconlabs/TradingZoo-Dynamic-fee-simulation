@@ -5,7 +5,9 @@
 # Binanace_trading_simulation
 This project is to about finding the optimal __Fee__ mechanism in the Exchange. RL agents acts as people under certain Fee policies. We observe how RL agents's behavior changes with Fee mechanism changes. Fee mechanism would change total trade volume and total fee. This project is maintained as Binance Fellowship.
 
-Special thanks to providing nice trading environment https://github.com/Yvictor/TradingGym/
+The project overview video : https://youtu.be/kBjv4KmkEHU
+
+Our project environment is based on https://github.com/Yvictor/TradingGym/
 
 # Structure
 1. [agent](https://github.com/deconlabs/Binanace_trading_simulation/tree/master/agent)
@@ -25,7 +27,7 @@ Special thanks to providing nice trading environment https://github.com/Yvictor/
 
 
 # Future Plan
-[]Provide environment where Limit order available -> lagged matching available to reflect more realistic trading environment
+Provide environment where Limit order available -> lagged matching available to reflect more realistic trading environment
 
 # Adopted Fee mechanisms (Could be added more)
 1. With no fee

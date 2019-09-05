@@ -60,7 +60,7 @@ def main():
     scores_list = []
     
     
-    # for n_epi in range(10000):  # 게임 1만판 진행
+    # for n_epi in range(10000):  # Progress 10,000 rounds 
     for n_epi in range(1,n_episodes+1):
         state = env.reset()
         score = 0.

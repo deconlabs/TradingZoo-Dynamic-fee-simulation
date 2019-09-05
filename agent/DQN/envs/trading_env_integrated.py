@@ -92,7 +92,7 @@ class TradingEnv:
         self.transaction_details = pd.DataFrame()
         self.logger.info('Making new env: {}'.format(env_id))
 
-    def _random_choice_section(self):  # todo : 마치 배치 뽑는거 같은건가?
+    def _random_choice_section(self):  
         begin_point = np.random.randint(len(self.df) - self.sample_len + 1)
         end_point = begin_point + self.sample_len
         df_section = self.df.iloc[begin_point: end_point]
@@ -109,21 +109,21 @@ class TradingEnv:
         # define the observation feature
         self.obs_features = self.df_sample[self.using_feature].as_matrix()
         # maybe make market position feature in final feature, set as option
-        self.posi_arr = np.zeros_like(self.price)  # 보유 주식수
+        self.posi_arr = np.zeros_like(self.price)  # numbers of shares held
         # position variation
-        self.posi_variation_arr = np.zeros_like(self.posi_arr)  # 보유 주식수의 변화기록
+        self.posi_variation_arr = np.zeros_like(self.posi_arr)  # change of shared held
         # position entry or cover :new_entry->1  increase->2 cover->-1 decrease->-2
         self.posi_entry_cover_arr = np.zeros_like(
-            self.posi_arr)  # long 포지션인지 short 포지션인지 기록해둠. 아니면 증감
+            self.posi_arr)  # indicates whether it is long or short position
         # self.position_feature = np.array(self.posi_l[self.step_st:self.step_st+self.obs_len])/(self.max_position*2)+0.5
 
         self.price_mean_arr = self.price.copy()
-        # 현재가 - 보유단가 ; 미실현 손익으로 추정함
+        # current price - average purchase price ; unrealized gain
         self.reward_fluctuant_arr = (
             self.price - self.price_mean_arr) * self.posi_arr
-        self.reward_makereal_arr = self.posi_arr.copy()  # bool 로 추정함. 실제 주식처분했는지 아닌지
+        self.reward_makereal_arr = self.posi_arr.copy()  # wheter the stock is sold or not(bool)
         self.reward_arr = self.reward_fluctuant_arr * \
-            self.reward_makereal_arr  # (현재가 - 보유단가) * 팔았는지 안팔았는지
+            self.reward_makereal_arr  #(current price - average purchase price) * (whether sold or not -> bool)
 
         self.budget = self.initial_budget
 
@@ -158,11 +158,11 @@ class TradingEnv:
 
     def _long(self, open_posi, enter_price, current_mkt_position, current_price_mean, action):  # Used once in `step()`
         fee = self.fee_rate * enter_price
-        enter_price += fee  # fee = 실제 내는 돈, self.fee_rate = 수수료
+        enter_price += fee  #  fee = amout of money to pay due to fee rate, self.fee_rate = fee rate
         betting_rate = (action + 1) / self.n_action_intervals
-        n_stock = self.budget * betting_rate / enter_price  # 주문할 주식 수
+        n_stock = self.budget * betting_rate / enter_price  # number of stocks to order
         self.total_volume+=n_stock
-        self.total_fee += n_stock * fee
+        self.total_fee += n_stock * enter_price * fee
         self.budget -= enter_price * n_stock
         if open_posi:
             self.chg_price_mean[:] = enter_price
@@ -178,12 +178,13 @@ class TradingEnv:
             self.chg_posi_entry_cover[:1] = 2
 
     def _long_cover(self, current_price_mean, current_mkt_position, action):  # Used once in `step()`
-        # n_stock = (보유주식 개수) * (비율(액션))
+        # n_stock = (number of shared held) * (ratio(action))
         n_stock = current_mkt_position * \
             (action - self.hold_action) / self.n_action_intervals
         self.total_volume+=n_stock
+        self.total_fee+= n_stock * self.chg_price[-1] * self.fee_rate
         # n_stock = min(action - self.hold_action, current_mkt_position)
-        total_value = self.chg_price[0] * n_stock
+        total_value = self.chg_price[-1] * n_stock
         fee = self.fee_rate * total_value
         self.budget += total_value - fee
         self.chg_price_mean[:] = current_price_mean
@@ -244,7 +245,7 @@ class TradingEnv:
                 self.chg_posi_var[:1] = -current_mkt_position
                 self.chg_posi_entry_cover[:1] = -2
                 self.chg_makereal[:1] = 1
-                self.budget += self.chg_price[0] * current_mkt_position
+                self.budget += self.chg_price[-1] * current_mkt_position
                 self.chg_reward[:] = (self.chg_price * (
                     1 - self.fee_rate) - self.chg_price_mean) * current_mkt_position * self.chg_makereal / self.initial_budget
             # self.transaction_details = pd.DataFrame([self.posi_arr,
@@ -262,11 +263,11 @@ class TradingEnv:
             self.info = self.fee_rate, 
 
         # use next tick, maybe choice avg in first 10 tick will be better to real backtest
-        # action 이 0~20으로 들어온다고 가정하겠음 [0,9] -> buy , 10 = hold [11,20] -> sell
+        # If action value is between 0~20, [0,9] -> buy , 10 = hold [11,20] -> sell
         # self.hold_action = 10
         # self.actions = [-1, -0.9, -0.8, ... , -0.1, 0, 0.1, ... , 0.8, 0.9, 1]
 
-        enter_price = self.chg_price[0]
+        enter_price = self.chg_price[-1]
         if action < self.hold_action:  # If `Buy`
             if self.budget < enter_price:  # If not enough budget
                 action = self.hold_action
@@ -296,7 +297,7 @@ class TradingEnv:
                                               ), axis=1)
         else:
             self.obs_return = self.obs_state
-        return self.obs_return, self.chg_reward[0], done, self.info, self.fee_rate, current_mkt_position
+        return self.obs_return, self.chg_reward[0], done, self.info, self.fee_rate
 
     # =====================================================Rendering Stuff=====================================================#
 

@@ -75,7 +75,7 @@ class TradingEnv:
         self.budget = initial_budget
 
         self.fluc_div = fluc_div
-        self.gameover = gameover_limit  # todo : 이게 뭘까
+        self.gameover = gameover_limit
         self.return_transaction = return_transaction
         self.sell_at_end = sell_at_end
 
@@ -85,13 +85,13 @@ class TradingEnv:
         self.transaction_details = pd.DataFrame()
         self.logger.info('Making new env: {}'.format(env_id))
 
-    def _random_choice_section(self):  # todo : 마치 배치 뽑는거 같은건가?
+    def _random_choice_section(self):
         begin_point = np.random.randint(len(self.df) - self.sample_len + 1)
         end_point = begin_point + self.sample_len
         df_section = self.df.iloc[begin_point: end_point]
         return df_section
 
-    def reset(self):  # prepares various state components
+    def reset(self):
         self.total_fee = 0
         self.df_sample = self._random_choice_section()
         self.step_st = 0
@@ -100,17 +100,17 @@ class TradingEnv:
         # define the observation feature
         self.obs_features = self.df_sample[self.using_feature].as_matrix()
         # maybe make market position feature in final feature, set as option
-        self.posi_arr = np.zeros_like(self.price)  # 보유 주식수
+        self.posi_arr = np.zeros_like(self.price) 
         # position variation
-        self.posi_variation_arr = np.zeros_like(self.posi_arr)  # 보유 주식수의 변화기록
+        self.posi_variation_arr = np.zeros_like(self.posi_arr)
         # position entry or cover :new_entry->1  increase->2 cover->-1 decrease->-2
-        self.posi_entry_cover_arr = np.zeros_like(self.posi_arr)  # long 포지션인지 short 포지션인지 기록해둠. 아니면 증감
-        # self.position_feature = np.array(self.posi_l[self.step_st:self.step_st+self.obs_len])/(self.max_position*2)+0.5
+        self.posi_entry_cover_arr = np.zeros_like(self.posi_arr)
+        
 
         self.price_mean_arr = self.price.copy()
-        self.reward_fluctuant_arr = (self.price - self.price_mean_arr) * self.posi_arr  # 현재가 - 보유단가 ; 미실현 손익으로 추정함
-        self.reward_makereal_arr = self.posi_arr.copy()  # bool 로 추정함. 실제 주식처분했는지 아닌지
-        self.reward_arr = self.reward_fluctuant_arr * self.reward_makereal_arr  # (현재가 - 보유단가) * 팔았는지 안팔았는지
+        self.reward_fluctuant_arr = (self.price - self.price_mean_arr) * self.posi_arr # unrealized return
+        self.reward_makereal_arr = self.posi_arr.copy()  # bool. whether realized or not
+        self.reward_arr = self.reward_fluctuant_arr * self.reward_makereal_arr  # realized return
 
         self.budget = self.initial_budget
 
@@ -144,11 +144,11 @@ class TradingEnv:
         self.t_index = 0
         return self.obs_return
 
-    def _long(self, open_posi, enter_price, current_mkt_position, current_price_mean, action):  # Used once in `step()`
+    def _long(self, open_posi, enter_price, current_mkt_position, current_price_mean, action):
         fee = self.fee * enter_price
         enter_price += fee
         betting_rate = (action + 1) / self.n_action_intervals
-        n_stock = self.budget * betting_rate / enter_price  # 주문할 주식 수
+        n_stock = self.budget * betting_rate / enter_price
         self.total_fee += n_stock * fee
         self.budget -= enter_price * n_stock
         if open_posi:
@@ -164,10 +164,8 @@ class TradingEnv:
             self.chg_posi_var[:1] = n_stock
             self.chg_posi_entry_cover[:1] = 2
 
-    def _long_cover(self, current_price_mean, current_mkt_position, action):  # Used once in `step()`
-        # n_stock = (보유주식 개수) * (비율(액션))
+    def _long_cover(self, current_price_mean, current_mkt_position, action):
         n_stock = current_mkt_position * (action - self.hold_action) / self.n_action_intervals
-        # n_stock = min(action - self.hold_action, current_mkt_position)
         total_value = self.chg_price[0] * n_stock
         fee = self.fee * total_value
         self.budget += total_value - fee
@@ -179,7 +177,7 @@ class TradingEnv:
         self.chg_posi_var[:1] = -n_stock
         self.chg_posi_entry_cover[:1] = -1
 
-    def _stayon(self, current_price_mean, current_mkt_position):  # Used once in `step()`
+    def _stayon(self, current_price_mean, current_mkt_position):
         self.chg_posi[:] = current_mkt_position
         self.chg_price_mean[:] = current_price_mean
 
@@ -237,14 +235,12 @@ class TradingEnv:
                                                     columns=self.df_sample.index).T
             self.info = self.df_sample.join(self.transaction_details)
 
-        # use next tick, maybe choice avg in first 10 tick will be better to real backtest
-        # action 이 0~20으로 들어온다고 가정하겠음 [0,9] -> buy , 10 = hold [11,20] -> sell
-        # self.hold_action = 10
-        # self.actions = [-1, -0.9, -0.8, ... , -0.1, 0, 0.1, ... , 0.8, 0.9, 1]
-
+        # self.hold_action = 5
+        # [0,4] : buy action -> buy asset using 20%,40%,60%,80%,100% of Budget
+        # [6,10] : sell action -> sell 20%,40%,60%,80%,100% of Possession Asset
         enter_price = self.chg_price[0]
-        if action < self.hold_action:  # If `Buy`
-            if self.budget < enter_price:  # If not enough budget
+        if action < self.hold_action:
+            if self.budget < enter_price: # If not enough budget
                 action = self.hold_action
             else:
                 open_posi = (current_mkt_position == 0)
@@ -291,10 +287,6 @@ class TradingEnv:
         price_x = list(range(len(self.price[:self.step_st + self.obs_len])))
         self.price_plot = self.ax.plot(price_x, self.price[:self.step_st + self.obs_len], c=(0, 0.68, 0.95, 0.9),
                                        zorder=1)
-        # maybe seperate up down color
-        # self.price_plot = self.ax.plot(price_x, self.price[:self.step_st+self.obs_len], c=(0, 0.75, 0.95, 0.9),zorder=1)
-        # self.features_plot = [self.ax3.plot(price_x, self.obs_features[:self.step_st + self.obs_len, i],
-        #                                     c=self.features_color[i])[0] for i in range(self.feature_len)]
         self.posi_plot_long = self.ax3.fill_between(price_x, 0, self.posi_arr[:self.step_st + self.obs_len],
                                                     where=self.posi_arr[:self.step_st + self.obs_len] >= 0,
                                                     facecolor=(1, 0.5, 0, 0.2), edgecolor=(1, 0.5, 0, 0.9), linewidth=1,
