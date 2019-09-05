@@ -1,0 +1,3 @@
+language: python3
+before install:
+- rvm install 2.1.5

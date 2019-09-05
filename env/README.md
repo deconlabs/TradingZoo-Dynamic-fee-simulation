@@ -92,6 +92,9 @@ note : short is not allowed in this env
 
 한번에 사고 팔 수 있는 자산의 범위를 n_action_interval argument 로 조절할 수 있다.
 
+You can adjust the percentage of the asset to sell by n_action_interval argument.
+
+
     self.n_action_intervals = n_action_intervals
     self.action_space = 2 * n_action_intervals + 1
     self.hold_action = n_action_intervals
@@ -128,6 +131,8 @@ action | Effect
 
 앞에 obs 가 붙으면 sample_len만큼의 길이를 갖는 sample에서 obs_len만큼 부분적으로 떼온 것
 
+If the prefix of the word is 'obs', it means that data whose length is obs_len is extracted from the sample data of which the length is sample_len.
+
     # observation part
     self.obs_state = self.obs_features[self.step_st: self.step_st + self.obs_len]
     self.obs_posi = self.posi_arr[self.step_st: self.step_st + self.obs_len]
@@ -140,6 +145,8 @@ action | Effect
     self.obs_reward = self.reward_arr[self.step_st: self.step_st + self.obs_len]
 
  앞에 chg 가 붙으면 변화량을 기록하는 것
+
+ The word whose prefix is 'chg' means the record of amount of change.
 
     # change part
     self.chg_posi = self.obs_posi[-self.step_len:]
@@ -154,34 +161,49 @@ action | Effect
 self.obs_features
 
 : df 에서 선택한 feature들 자체로 만들어진 observation feature
+  
+  Observation features are selected among the features of df.
+  
 
 self.posi_arr
 
 : 현 timestep에서 가지고 있는 포지션 정보 ( positive → long, negative → short)
+  
+  The information of the position at current timestep.
 
 self.posi_variation_arr
 
-: 어떤 행동을 하였는지 어떻게 변화했는지 (첫번째 값만 변경함 1 → long, -1 → short)
+: 어떤 행동을 하였는지 어떻게 변화했는지 (Only the first value changes : 1 → long, -1 → short)
+  It indicates which action the agent chosen, and the change of status.
 
 self.posi_entry_cover 
 
 : agent의 action이 현 position과 비교했을 때 어떤 행동이었는지 (2 → 포지션 강화, 1 → 새로운 포지션 시작, -1 → 포지션 청산)
+  
+  It shows the characteristic of the action compared to current position
 
 self.price 
 
 : dataframe에서 price column 가져온 것에서 현재 timestep에 해당하는 부분만 가져옴
-
+  
+  Retrieves the information about current timestep from price column of the dataframe.
+  
 self.price_mean_arr
 
 : 가지고 있는 포지션들의 가격 평균(이 평균 값을 기준으로 수익 실현이 된다)
+  The average pirce fo current positions. (The income is calculated by this value)
 
 self.reward_fluctuant_arr
 
 : 실현되기 이전의 포지션들의 현재 수익률. 수익 실현에 해당하는 행동을 하는 순간 이 값들은 obs_reward로 바뀐다고 생각하면 된다. 
+  
+  It shows the unrealized gains. When the action is taken, these values change to obs_reward.
 
 self.reward_makereal_arr
 
 : 현 timestep에서 포지션에 대한 손익이 실현되었는지 여부에 대한 feature (step_len 중에서 첫번째 값으로만 정보 전달함)
+
+  It shows whether the profit and loss is realized abouth the position at current timestep. ( It gives information only from the first value of step_len)
 
 Final returned state : concatentation of various features
 

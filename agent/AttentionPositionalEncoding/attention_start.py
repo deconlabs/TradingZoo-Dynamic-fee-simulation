@@ -66,20 +66,14 @@ def main():
     scores_list = []
     loss_list = []
     n_epi = 0
-    # for n_epi in range(10000):  # 게임 1만판 진행
+
     for i_episode in range(1,n_episodes+1):
         n_epi +=1
-        
-        # if (i_episode + 1) % 500 == 0:
-        #     sample_len += 480
-        #     env.sample_len = sample_len
-
         state = env.reset()
         score = 0.
         actions = []
         rewards = []
 
-        # for t in range(num_steps):
         while True:
             action = int(agent.act(state, eps=0.))
             next_state, reward, done, _ = env.step(action)
