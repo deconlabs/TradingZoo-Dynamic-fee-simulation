@@ -13,7 +13,7 @@ from .default_hyperparameters import SEED, BUFFER_SIZE, BATCH_SIZE, START_SINCE,
                                     A, INIT_BETA, P_EPS, N_STEPS, V_MIN, V_MAX,\
                                     CLIP, N_ATOMS, INIT_SIGMA, LINEAR, FACTORIZED
 
-device = torch.device("cpu")
+device = torch.device("cuda:3")
 
 def set_device(new_device):
     global device

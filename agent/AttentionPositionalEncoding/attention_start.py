@@ -10,7 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from custom_trading_env import TradingEnv
+from envs.trading_env_integrated import TradingEnv
 from utils import device
 import DQNTradingAgent.dqn_agent as dqn_agent
 from custom_hyperparameters import hyperparams
@@ -76,7 +76,7 @@ def main():
 
         while True:
             action = int(agent.act(state, eps=0.))
-            next_state, reward, done, _ = env.step(action)
+            next_state, reward, done, _, fee_rate = env.step(action)
 
             rewards.append(reward)
             score += reward

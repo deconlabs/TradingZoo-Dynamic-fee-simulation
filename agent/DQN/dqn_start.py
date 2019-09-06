@@ -12,11 +12,12 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 import DQNTradingAgent.dqn_agent as dqn_agent
+from envs.trading_env_integrated import TradingEnv
 from custom_hyperparameters import hyperparams
 from arguments import argparser
 
 args = argparser() # device_num, save_num, risk_aversion, n_episodes
-env_module = importlib.import_module(f'envs.trading_env_{args.environment}')
+
 torch.cuda.manual_seed_all(7)
 
 device = torch.device("cuda:{}".format(args.device_num))
@@ -47,7 +48,7 @@ df.fillna(method='ffill', inplace=True)
 
 def main():
 
-    env = env_module.TradingEnv(custom_args=args, env_id='custom_trading_env', obs_data_len=obs_data_len, step_len=step_len, sample_len=sample_len,
+    env = TradingEnv(custom_args=args, env_id='custom_trading_env', obs_data_len=obs_data_len, step_len=step_len, sample_len=sample_len,
                            df=df, fee=0.001, initial_budget=1, n_action_intervals=n_action_intervals, deal_col_name='c', sell_at_end=True,
                            feature_names=['o', 'h','l','c','v',
                                           'num_trades', 'taker_base_vol'])
