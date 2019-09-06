@@ -94,6 +94,9 @@ note : short is not allowed in this env
 You can adjust the percentage of the asset to sell by n_action_interval argument.
 
 
+You can adjust the percentage of the asset to sell by n_action_interval argument.
+
+
     self.n_action_intervals = n_action_intervals
     self.action_space = 2 * n_action_intervals + 1
     self.hold_action = n_action_intervals
@@ -130,6 +133,8 @@ action | Effect
 
 If the prefix of the word is 'obs', it means that data whose length is obs_len is extracted from the sample data of which the length is sample_len.
 
+If the prefix of the word is 'obs', it means that data whose length is obs_len is extracted from the sample data of which the length is sample_len.
+
     # observation part
     self.obs_state = self.obs_features[self.step_st: self.step_st + self.obs_len]
     self.obs_posi = self.posi_arr[self.step_st: self.step_st + self.obs_len]
@@ -141,6 +146,8 @@ If the prefix of the word is 'obs', it means that data whose length is obs_len i
     self.obs_makereal = self.reward_makereal_arr[self.step_st: self.step_st + self.obs_len]
     self.obs_reward = self.reward_arr[self.step_st: self.step_st + self.obs_len]
 
+
+ The word whose prefix is 'chg' means the record of amount of change.
 
  The word whose prefix is 'chg' means the record of amount of change.
 
@@ -157,6 +164,7 @@ If the prefix of the word is 'obs', it means that data whose length is obs_len i
 self.obs_features
 
 : Observation features are selected among the features of df.
+
   
 
 self.posi_arr
@@ -186,12 +194,13 @@ self.price_mean_arr
 self.reward_fluctuant_arr
 
 : It shows the unrealized gains. When the action is taken, these values change to obs_reward. 
-  
 
 self.reward_makereal_arr
 
 : It shows whether the profit and loss is realized abouth the position at current timestep. ( It gives information only from the first value of step_len)
 
+
+  It shows whether the profit and loss is realized abouth the position at current timestep. ( It gives information only from the first value of step_len)
 
 Final returned state : concatentation of various features
 
