@@ -5,8 +5,8 @@ import torch
 from torch.distributions import Categorical
 from arguments import argparser
 
-args = argparser()
-device = "cuda:" + str(args.device_num) if torch.cuda.is_available() else "cpu"
+# args = argparser()
+device = "cuda:0" #"cuda:" + str(args.device_num) if torch.cuda.is_available() else "cpu"
 
 def states_to_prob(model, states):
     states = torch.stack(states)
@@ -39,7 +39,7 @@ def collect_trajectories(envs, model, num_steps, ):
         log_prob = dist.log_prob(action)  # torch.log(dist[action])
         log_probs.append(log_prob)  # num_envs*1
         # values.append(value)  # num_envs * 1
-        # rewards.append(torch.FloatTensor(reward).unsqueeze(1).to(device)) -> 이 방식이 리스트 안에 텐서 넣는거라 일관성 있어서 좋은 것 같다.
+  
         rewards.append(reward)
         masks.append(torch.FloatTensor(1 - done).unsqueeze(1).to(device))
 

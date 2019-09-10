@@ -24,11 +24,17 @@ def argparser():
     
     parser.add_argument('--render', type=bool, default=False,
                         help='want to render?')
+<<<<<<< HEAD
     parser.add_argument('--hand_type', type=bool, default=True,
                         help='want to hand type action?')
     
     parser.add_argument('--env',default='stochastic',type=str,help='what fee mech?')
     
+=======
+    
+    parser.add_argument('--environment', type=str, default="default",
+                        help='what environment to use')
+>>>>>>> upstream/master
 
     args = parser.parse_args()
     return args

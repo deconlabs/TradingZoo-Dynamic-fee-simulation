@@ -131,17 +131,8 @@ class TradingEnv:
 
         if self.return_transaction:
             self.obs_return = np.concatenate((self.obs_state,
-                                              self.obs_posi[:, np.newaxis],
-                                              self.obs_posi_var[:, np.newaxis],
-                                              self.obs_posi_entry_cover[:, np.newaxis],
-                                              self.obs_price[:, np.newaxis],
-                                              self.obs_price_mean[:, np.newaxis],
-                                              self.obs_reward_fluctuant[:, np.newaxis],
-                                              self.obs_makereal[:, np.newaxis],
-                                              self.obs_reward[:, np.newaxis],
-                                              np.array([self.fee_rate for _ in range(self.obs_len)])[:, np.newaxis]),
-
-                                             axis=1)
+                                              np.array([self.fee_rate for _ in range(self.obs_len)])[:, np.newaxis],
+                                              ), axis=1)
         else:
             self.obs_return = self.obs_state
 

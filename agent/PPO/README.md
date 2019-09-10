@@ -95,7 +95,7 @@ print_interval = 10
 
 scores_list = []
 loss_list = []
-for n_epi in range(10000):  # 게임 1만판 진행
+for n_epi in range(10000):  # Progress 10,000 rounds
     n_epi +=1
     loss = 0.0
     log_probs, states, actions, rewards, next_state, masks, values = collect_trajectories(envs,model,num_steps)

@@ -10,21 +10,22 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from custom_trading_env import TradingEnv
-from utils import device
 import DQNTradingAgent.dqn_agent as dqn_agent
 from custom_hyperparameters import hyperparams
 from arguments import argparser
+from envs.trading_env_integrated import TradingEnv
 
 args = argparser()
 # device_num, save_num, risk_aversion, n_episodes, fee
-
 device = torch.device("cuda:{}".format(args.device_num))
 dqn_agent.set_device(device)
 
-load_location = 'saves/{}'.format(args.save_num)
+load_location = 'saves/Original/{}'.format(args.save_num)
 
-save_location = 'saves/transfer0/{}/{}'.format(args.fee , args.save_num)
+if args.environment=="default":
+    save_location = 'saves/transfer/{}/{}'.format(args.fee, args.save_num)
+else:
+    save_location = 'saves/transfer/{}/{}'.format(args.environment , args.save_num)
 
 if not os.path.exists(save_location):
     os.makedirs(save_location)
@@ -60,7 +61,7 @@ def main():
                            feature_names=['o', 'h','l','c','v',
                                           'num_trades', 'taker_base_vol'])
     agent = dqn_agent.Agent(action_size=2 * n_action_intervals + 1, obs_len=obs_data_len, num_features=env.reset().shape[-1], **hyperparams)
-    agent.qnetwork_local.load_state_dict(torch.load(os.path.join(load_location, 'TradingGym_Rainbow_3000.pth'), map_location=device))
+    agent.qnetwork_local.load_state_dict(torch.load(os.path.join(load_location, 'TradingGym_Rainbow_1000.pth'), map_location=device))
     agent.qnetwork_local.to(device)
 
     beta = 0.4
@@ -68,11 +69,8 @@ def main():
     agent.beta = beta
 
     scores_list = []
-    loss_list = []
-    n_epi = 0
+        
     for i_episode in range(n_episodes):
-        n_epi +=1
-
         state = env.reset()
         score = 0.
         actions = []
@@ -81,8 +79,8 @@ def main():
         # for t in range(num_steps):
         while True:
             action = int(agent.act(state, eps=0.))
-            next_state, reward, done, _ = env.step(action)
-
+            next_state, reward, done, _ ,fee_rate = env.step(action)
+           
             rewards.append(reward)
             score += reward
             if reward < 0:
@@ -102,14 +100,15 @@ def main():
 
         scores_list.append(score)
 
-        if n_epi % print_interval == 0 and n_epi != 0:
-            print_str = "# of episode: {:d}, avg score: {:.4f}\n  Actions: {}".format(n_epi, sum(scores_list[-print_interval:]) / print_interval, np.array(actions))
+        if i_episode % print_interval == 0 and i_episode != 0:
+            print_str = "# of episode: {:d}, avg score: {:.4f}\n  Actions: {} \n fee rate: {}".format(i_episode, sum(scores_list[-print_interval:]) / print_interval, np.array(actions), fee_rate)
             print(print_str)
             # with open(os.path.join(save_location, "output_log.txt"), mode='a') as f:
             #     f.write(print_str + '\n')
 
-        if n_epi % save_interval == 0:
-            torch.save(agent.qnetwork_local.state_dict(), os.path.join(save_location, 'TradingGym_Rainbow_{:d}.pth'.format(n_epi)))
+        if i_episode % save_interval == 0:
+            torch.save(agent.qnetwork_local.state_dict(), os.path.join(save_location, 'TradingGym_Rainbow_{:d}.pth'.format(i_episode)))
+            torch.save(scores_list, os.path.join(save_location, 'scores.pth'))
             torch.save(scores_list, os.path.join(save_location, 'scores.pth'))
 
     del env

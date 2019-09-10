@@ -36,12 +36,14 @@ class TradingEnv:
         assert 0 <= fee <= 1, "fee must be between 0 and 1 (0% to 100%)"
         assert deal_col_name in df.columns, "deal_col not in Dataframe please define the correct column name of which column want to calculate the profit."
         for col in feature_names:
-            assert col in df.columns, "feature name: {} not in Dataframe.".format(col)
+            assert col in df.columns, "feature name: {} not in Dataframe.".format(
+                col)
 
         self.custom_args = custom_args
         self.total_fee = 0
 
-        logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(message)s')
+        logging.basicConfig(level=logging.INFO,
+                            format='[%(asctime)s] %(message)s')
         self.logger = logging.getLogger(env_id)
         # self.file_loc_path = os.environ.get('FILEPATH', '')
 
@@ -53,7 +55,8 @@ class TradingEnv:
 
         act_desc_pairs = [(n_action_intervals, "Hold")]
         for i in range(n_action_intervals):
-            act_desc_pairs.append((i, "Buy with {:.2f}% of current budget".format((i + 1) / n_action_intervals * 100)))
+            act_desc_pairs.append((i, "Buy with {:.2f}% of current budget".format(
+                (i + 1) / n_action_intervals * 100)))
             act_desc_pairs.append((n_action_intervals + i + 1,
                                    "Sell {:.2f}% of current assets".format((i + 1) / n_action_intervals * 100)))
         act_desc_pairs.sort(key=lambda x: x[0])
@@ -104,13 +107,17 @@ class TradingEnv:
         # position variation
         self.posi_variation_arr = np.zeros_like(self.posi_arr)  # 보유 주식수의 변화기록
         # position entry or cover :new_entry->1  increase->2 cover->-1 decrease->-2
-        self.posi_entry_cover_arr = np.zeros_like(self.posi_arr)  # long 포지션인지 short 포지션인지 기록해둠. 아니면 증감
+        self.posi_entry_cover_arr = np.zeros_like(
+            self.posi_arr)  # long 포지션인지 short 포지션인지 기록해둠. 아니면 증감
         # self.position_feature = np.array(self.posi_l[self.step_st:self.step_st+self.obs_len])/(self.max_position*2)+0.5
 
         self.price_mean_arr = self.price.copy()
-        self.reward_fluctuant_arr = (self.price - self.price_mean_arr) * self.posi_arr  # 현재가 - 보유단가 ; 미실현 손익으로 추정함
+        # 현재가 - 보유단가 ; 미실현 손익으로 추정함
+        self.reward_fluctuant_arr = (
+            self.price - self.price_mean_arr) * self.posi_arr
         self.reward_makereal_arr = self.posi_arr.copy()  # bool 로 추정함. 실제 주식처분했는지 아닌지
-        self.reward_arr = self.reward_fluctuant_arr * self.reward_makereal_arr  # (현재가 - 보유단가) * 팔았는지 안팔았는지
+        self.reward_arr = self.reward_fluctuant_arr * \
+            self.reward_makereal_arr  # (현재가 - 보유단가) * 팔았는지 안팔았는지
 
         self.budget = self.initial_budget
 
@@ -122,10 +129,12 @@ class TradingEnv:
         self.obs_state = self.obs_features[self.step_st: self.step_st + self.obs_len]
         self.obs_posi = self.posi_arr[self.step_st: self.step_st + self.obs_len]
         self.obs_posi_var = self.posi_variation_arr[self.step_st: self.step_st + self.obs_len]
-        self.obs_posi_entry_cover = self.posi_entry_cover_arr[self.step_st: self.step_st + self.obs_len]
+        self.obs_posi_entry_cover = self.posi_entry_cover_arr[
+            self.step_st: self.step_st + self.obs_len]
         self.obs_price = self.price[self.step_st: self.step_st + self.obs_len]
         self.obs_price_mean = self.price_mean_arr[self.step_st: self.step_st + self.obs_len]
-        self.obs_reward_fluctuant = self.reward_fluctuant_arr[self.step_st: self.step_st + self.obs_len]
+        self.obs_reward_fluctuant = self.reward_fluctuant_arr[
+            self.step_st: self.step_st + self.obs_len]
         self.obs_makereal = self.reward_makereal_arr[self.step_st: self.step_st + self.obs_len]
         self.obs_reward = self.reward_arr[self.step_st: self.step_st + self.obs_len]
 
@@ -133,10 +142,13 @@ class TradingEnv:
             self.obs_return = np.concatenate((self.obs_state,
                                               self.obs_posi[:, np.newaxis],
                                               self.obs_posi_var[:, np.newaxis],
-                                              self.obs_posi_entry_cover[:, np.newaxis],
+                                              self.obs_posi_entry_cover[:,
+                                                                        np.newaxis],
                                               self.obs_price[:, np.newaxis],
-                                              self.obs_price_mean[:, np.newaxis],
-                                              self.obs_reward_fluctuant[:, np.newaxis],
+                                              self.obs_price_mean[:,
+                                                                  np.newaxis],
+                                              self.obs_reward_fluctuant[:,
+                                                                        np.newaxis],
                                               self.obs_makereal[:, np.newaxis],
                                               self.obs_reward[:, np.newaxis],
                                               np.array([self.fee_rate for _ in range(self.obs_len)])[:, np.newaxis]),
@@ -162,7 +174,7 @@ class TradingEnv:
             self.chg_posi_entry_cover[:1] = 1
         else:
             after_act_mkt_position = current_mkt_position + n_stock
-            self.chg_price_mean[:] = (current_price_mean * current_mkt_position + \
+            self.chg_price_mean[:] = (current_price_mean * current_mkt_position +
                                       enter_price * n_stock) / after_act_mkt_position
             self.chg_posi[:] = after_act_mkt_position
             self.chg_posi_var[:1] = n_stock
@@ -170,7 +182,8 @@ class TradingEnv:
 
     def _long_cover(self, current_price_mean, current_mkt_position, action):  # Used once in `step()`
         # n_stock = (보유주식 개수) * (비율(액션))
-        n_stock = current_mkt_position * (action - self.hold_action) / self.n_action_intervals
+        n_stock = current_mkt_position * \
+            (action - self.hold_action) / self.n_action_intervals
         # n_stock = min(action - self.hold_action, current_mkt_position)
         total_value = self.chg_price[0] * n_stock
         fee = self.fee_rate * total_value
@@ -179,7 +192,7 @@ class TradingEnv:
         self.chg_posi[:] = current_mkt_position - n_stock
         self.chg_makereal[:1] = 1
         self.chg_reward[:] = ((self.chg_price * (
-                1 - self.fee_rate) - self.chg_price_mean) * n_stock) * self.chg_makereal / self.initial_budget
+            1 - self.fee_rate) - self.chg_price_mean) * n_stock) * self.chg_makereal / self.initial_budget
         self.chg_posi_var[:1] = -n_stock
         self.chg_posi_entry_cover[:1] = -1
 
@@ -216,10 +229,12 @@ class TradingEnv:
         # position variation
         self.obs_posi_var = self.posi_variation_arr[self.step_st: self.step_st + self.obs_len]
         # position entry or cover :new_entry->1  increase->2 cover->-1 decrease->-2
-        self.obs_posi_entry_cover = self.posi_entry_cover_arr[self.step_st: self.step_st + self.obs_len]
+        self.obs_posi_entry_cover = self.posi_entry_cover_arr[
+            self.step_st: self.step_st + self.obs_len]
         self.obs_price = self.price[self.step_st: self.step_st + self.obs_len]
         self.obs_price_mean = self.price_mean_arr[self.step_st: self.step_st + self.obs_len]
-        self.obs_reward_fluctuant = self.reward_fluctuant_arr[self.step_st: self.step_st + self.obs_len]
+        self.obs_reward_fluctuant = self.reward_fluctuant_arr[
+            self.step_st: self.step_st + self.obs_len]
         self.obs_makereal = self.reward_makereal_arr[self.step_st: self.step_st + self.obs_len]
         self.obs_reward = self.reward_arr[self.step_st: self.step_st + self.obs_len]
         # change part
@@ -231,10 +246,17 @@ class TradingEnv:
         self.chg_reward_fluctuant = self.obs_reward_fluctuant[-self.step_len:]
         self.chg_makereal = self.obs_makereal[-self.step_len:]
         self.chg_reward = self.obs_reward[-self.step_len:]
+<<<<<<< HEAD
         
         
         
         self.fee_rate=self.get_stochastic(self.df_sample.iloc[self.step_st: self.step_st + self.obs_len])
+=======
+
+        self.fee_rate = self.fee_rate * self.df_sample['v'].iloc[
+            self.step_st: self.step_st + self.obs_len].sum() / self.previous_volume.sum()
+        self.previous_volume = self.df_sample['v'].iloc[self.step_st: self.step_st + self.obs_len]
+>>>>>>> upstream/master
 
         done = False
         if self.step_st + self.obs_len + self.step_len >= len(self.price):
@@ -248,7 +270,7 @@ class TradingEnv:
                 self.chg_makereal[:1] = 1
                 self.budget += self.chg_price[0] * current_mkt_position
                 self.chg_reward[:] = (self.chg_price * (
-                        1 - self.fee_rate) - self.chg_price_mean) * current_mkt_position * self.chg_makereal / self.initial_budget
+                    1 - self.fee_rate) - self.chg_price_mean) * current_mkt_position * self.chg_makereal / self.initial_budget
             self.transaction_details = pd.DataFrame([self.posi_arr,
                                                      self.posi_variation_arr,
                                                      self.posi_entry_cover_arr,
@@ -273,7 +295,8 @@ class TradingEnv:
                 action = self.hold_action
             else:
                 open_posi = (current_mkt_position == 0)
-                self._long(open_posi, enter_price, current_mkt_position, current_price_mean, action)
+                self._long(open_posi, enter_price,
+                           current_mkt_position, current_price_mean, action)
 
         elif (self.hold_action < action <= self.hold_action + self.n_action_intervals) and (
                 current_mkt_position > 0):  # If `Sell` and `Has Asset`
@@ -288,20 +311,22 @@ class TradingEnv:
                 self._stayon(current_price_mean, current_mkt_position)
 
         self.chg_reward_fluctuant[:] = (self.chg_price * (
-                1 - self.fee_rate) - self.chg_price_mean) * self.chg_posi / self.initial_budget
+            1 - self.fee_rate) - self.chg_price_mean) * self.chg_posi / self.initial_budget
 
         if self.return_transaction:
             self.obs_return = np.concatenate((self.obs_state,
                                               self.obs_posi[:, np.newaxis],
                                               self.obs_posi_var[:, np.newaxis],
-                                              self.obs_posi_entry_cover[:, np.newaxis],
+                                              self.obs_posi_entry_cover[:,
+                                                                        np.newaxis],
                                               self.obs_price[:, np.newaxis],
-                                              self.obs_price_mean[:, np.newaxis],
-                                              self.obs_reward_fluctuant[:, np.newaxis],
+                                              self.obs_price_mean[:,
+                                                                  np.newaxis],
+                                              self.obs_reward_fluctuant[:,
+                                                                        np.newaxis],
                                               self.obs_makereal[:, np.newaxis],
                                               self.obs_reward[:, np.newaxis],
-                                              np.array([self.fee_rate for _ in range(self.obs_len)])[:, np.newaxis])
-                                             ,
+                                              np.array([self.fee_rate for _ in range(self.obs_len)])[:, np.newaxis]),
                                              axis=1)
         else:
             self.obs_return = self.obs_state
@@ -325,7 +350,8 @@ class TradingEnv:
         # self.features_plot = [self.ax3.plot(price_x, self.obs_features[:self.step_st + self.obs_len, i],
         #                                     c=self.features_color[i])[0] for i in range(self.feature_len)]
         self.posi_plot_long = self.ax3.fill_between(price_x, 0, self.posi_arr[:self.step_st + self.obs_len],
-                                                    where=self.posi_arr[:self.step_st + self.obs_len] >= 0,
+                                                    where=self.posi_arr[:self.step_st +
+                                                                        self.obs_len] >= 0,
                                                     facecolor=(1, 0.5, 0, 0.2), edgecolor=(1, 0.5, 0, 0.9), linewidth=1,
                                                     label="posi_plot_long")
         self.ax3.legend(framealpha=0.2, loc="center left")
@@ -338,26 +364,32 @@ class TradingEnv:
                 fill=True)
         )  # remove background)
         self.fluc_reward_plot_p = self.ax2.fill_between(price_x, 0,
-                                                        self.reward_fluctuant_arr[:self.step_st + self.obs_len],
+                                                        self.reward_fluctuant_arr[:self.step_st +
+                                                                                  self.obs_len],
                                                         where=self.reward_fluctuant_arr[
-                                                              :self.step_st + self.obs_len] >= 0,
+                                                            :self.step_st + self.obs_len] >= 0,
                                                         facecolor=(1, 0.8, 0, 0.2), edgecolor=(1, 0.8, 0, 0.9),
                                                         linewidth=0.8, label="fluc_reward_plot_p")
         self.fluc_reward_plot_n = self.ax2.fill_between(price_x, 0,
-                                                        self.reward_fluctuant_arr[:self.step_st + self.obs_len],
+                                                        self.reward_fluctuant_arr[:self.step_st +
+                                                                                  self.obs_len],
                                                         where=self.reward_fluctuant_arr[
-                                                              :self.step_st + self.obs_len] <= 0,
+                                                            :self.step_st + self.obs_len] <= 0,
                                                         facecolor=(0, 1, 0.8, 0.2), edgecolor=(0, 1, 0.8, 0.9),
                                                         linewidth=0.8, label="fluc_reward_plot_n")
 
         self.reward_plot_p = self.ax2.fill_between(price_x, 0,
-                                                   self.reward_arr[:self.step_st + self.obs_len].cumsum(),
-                                                   where=self.reward_arr[:self.step_st + self.obs_len].cumsum() >= 0,
+                                                   self.reward_arr[:self.step_st +
+                                                                   self.obs_len].cumsum(),
+                                                   where=self.reward_arr[:self.step_st +
+                                                                         self.obs_len].cumsum() >= 0,
                                                    facecolor=(1, 0, 0, 0.2), edgecolor=(1, 0, 0, 0.9), linewidth=1,
                                                    label="reward_plot_p")
         self.reward_plot_n = self.ax2.fill_between(price_x, 0,
-                                                   self.reward_arr[:self.step_st + self.obs_len].cumsum(),
-                                                   where=self.reward_arr[:self.step_st + self.obs_len].cumsum() <= 0,
+                                                   self.reward_arr[:self.step_st +
+                                                                   self.obs_len].cumsum(),
+                                                   where=self.reward_arr[:self.step_st +
+                                                                         self.obs_len].cumsum() <= 0,
                                                    facecolor=(0, 1, 0, 0.2), edgecolor=(0, 1, 0, 0.9), linewidth=1,
                                                    label="reward_plot_n")
         self.ax2.legend(framealpha=0.2, loc="center left")
@@ -385,7 +417,8 @@ class TradingEnv:
             rect3 = [left, 0.05, width, 0.15]
 
             self.fig = plt.figure(figsize=(15, 8))
-            self.fig.suptitle('%s' % self.df_sample['datetime'].iloc[0].date(), fontsize=14, fontweight='bold')
+            self.fig.suptitle('%s' % self.df_sample['datetime'].iloc[0].date(
+            ), fontsize=14, fontweight='bold')
             # self.ax = self.fig.add_subplot(1,1,1)
             self.ax = self.fig.add_axes(rect1)  # left, bottom, width, height
             self.ax2 = self.fig.add_axes(rect2, sharex=self.ax)
@@ -397,7 +430,8 @@ class TradingEnv:
             # fig, ax = plt.subplots()
             self._plot_trading()
 
-            self.ax.set_xlim(0, len(self.price[:self.step_st + self.obs_len]) + 200)
+            self.ax.set_xlim(
+                0, len(self.price[:self.step_st + self.obs_len]) + 200)
             plt.ion()
             # self.fig.tight_layout()
             plt.show()
@@ -418,7 +452,8 @@ class TradingEnv:
 
             self._plot_trading()
 
-            self.ax.set_xlim(0, len(self.price[:self.step_st + self.obs_len]) + 200)
+            self.ax.set_xlim(
+                0, len(self.price[:self.step_st + self.obs_len]) + 200)
             if save:
                 self.fig.savefig('fig/%s.png' % str(self.t_index))
             plt.pause(0.0001)
