@@ -1,7 +1,7 @@
-#!/usr/bin/env python
-# coding: utf-8
-
 import os
+from os.path import dirname
+import sys
+sys.path.append(dirname(dirname(sys.path[0])))
 import random
 import numpy as np
 import pandas as pd
@@ -13,7 +13,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.distributions import Categorical
 
-from custom_trading_env import TradingEnv
+from envs.trading_env_integrated import TradingEnv
 from utils import collect_trajectories, clipped_surrogate
 from PPOTradingAgent.model import CNNTradingAgent
 from common.multiprocessing_env import  SubprocVecEnv
@@ -33,7 +33,7 @@ risk_aversion_multiplier = 0.5 + args.risk_aversion / 2
 n_action_intervals = 5
 init_budget = 1
 
-df = pd.read_hdf('dataset/binance_data_train.h5', 'STW')
+df = pd.read_hdf('../../dataset/binance_data_train.h5', 'STW')
 df.fillna(method='ffill', inplace=True)
 
 save_location = 'saves/Original/{}'.format(args.save_num)
@@ -43,7 +43,7 @@ if not os.path.exists(save_location):
 def make_env():
     def _thunk():
         env = TradingEnv(custom_args=args, env_id='custom_trading_env', obs_data_len=obs_data_len, step_len=step_len, sample_len=sample_len,
-                           df=df, fee=0.001, initial_budget=1, n_action_intervals=n_action_intervals, deal_col_name='c', sell_at_end=True,
+                           df=df, fee=args.fee, initial_budget=1, n_action_intervals=n_action_intervals, deal_col_name='c', sell_at_end=True,
                            feature_names=['o', 'h','l','c','v',
                                           'num_trades', 'taker_base_vol'])
 

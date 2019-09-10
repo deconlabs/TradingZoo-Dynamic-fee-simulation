@@ -1,4 +1,7 @@
 import os
+from os.path import dirname
+import sys
+sys.path.append(dirname(dirname(sys.path[0])))
 import importlib
 import random
 import numpy as np
@@ -43,7 +46,7 @@ init_budget = 1
 
 torch.save(hyperparams, os.path.join(save_location, "hyperparams.pth"))
 
-df = pd.read_hdf('dataset/binance_data_train.h5', 'STW')
+df = pd.read_hdf('../../dataset/binance_data_train.h5', 'STW')
 df.fillna(method='ffill', inplace=True)
 
 def main():
@@ -71,7 +74,7 @@ def main():
         while True:
             action = int(agent.act(state, eps=0.))
             actions.append(action)
-            next_state, reward, done, _ , fee_rate = env.step(action)
+            next_state, reward, done, info  = env.step(action)
 
             rewards.append(reward)
             score += reward
@@ -92,7 +95,7 @@ def main():
         scores_list.append(score)
 
         if n_epi % print_interval == 0 and n_epi != 0:
-            print_str = "# of episode: {:d}, avg score: {:.4f}\n  Actions: {} fee_rate: {:.6f}".format(n_epi, sum(scores_list[-print_interval:]) / print_interval, np.array(actions), fee_rate)
+            print_str = "# of episode: {:d}, avg score: {:.4f}\n  Actions: {} fee_rate: {:.6f}".format(n_epi, sum(scores_list[-print_interval:]) / print_interval, np.array(actions), info['fee_rate'])
             print(print_str)
             with open(os.path.join(save_location, "output_log.txt"), mode='a') as f:
                 f.write(print_str + '\n')
