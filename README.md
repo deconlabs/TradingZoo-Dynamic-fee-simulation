@@ -90,7 +90,7 @@ cd agent/DQN
 ```
 Open Observation notebook and run all cell
 
-## total fee and total volume under different fee rate
+## Total fee and total volume under different fee rate
 ![total_fee](figs/TotalFee.png)
 ![total_volume](figs/TotalVolume.png)
 
