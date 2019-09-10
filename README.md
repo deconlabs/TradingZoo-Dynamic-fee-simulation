@@ -93,7 +93,6 @@ Open Observation notebook and run all cell
 ## Total fee and total volume under different fee rate
 ![total_fee](figs/TotalFee.png)
 ![total_volume](figs/TotalVolume.png)
-![FeeperVolume](figs/TotalFeeperVolume.png)
 
 ## How Data feature affects TradingAgent's Decision
 Using [integrated_gradient](https://medium.com/@kartikeyabhardwaj98/integrated-gradients-for-deep-neural-networks-c114e3968eae), we can interpret how agents observe the data.
