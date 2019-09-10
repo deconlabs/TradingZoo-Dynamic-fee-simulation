@@ -27,6 +27,8 @@ def argparser():
     
     parser.add_argument('--render', type=bool, default=False,
                         help='want to render?')
-
+    parser.add_argument('--environment', type=str, default="default",
+                        help='what environment to use')
+                        
     args = parser.parse_args()
     return args

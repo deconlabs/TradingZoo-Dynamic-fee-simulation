@@ -10,7 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from custom_trading_env import TradingEnv
+from envs.trading_env_integrated import TradingEnv
 from utils import device
 import DQNTradingAgent.dqn_agent as dqn_agent
 from custom_hyperparameters import hyperparams
@@ -66,29 +66,23 @@ def main():
     scores_list = []
     loss_list = []
     n_epi = 0
-    # for n_epi in range(10000):  # 게임 1만판 진행
+
     for i_episode in range(1,n_episodes+1):
         n_epi +=1
-        
-        # if (i_episode + 1) % 500 == 0:
-        #     sample_len += 480
-        #     env.sample_len = sample_len
-
         state = env.reset()
         score = 0.
         actions = []
         rewards = []
 
-        # for t in range(num_steps):
         while True:
             action = int(agent.act(state, eps=0.))
-            next_state, reward, done, _ = env.step(action)
+            next_state, reward, done, _, fee_rate = env.step(action)
 
             rewards.append(reward)
             score += reward
             if reward < 0:
                 reward *= risk_aversion_multiplier
-            if sell_at_end and done:
+            if done:
                 action = 2 * n_action_intervals
             actions.append(action)
             agent.step(state, action, reward, next_state, done)

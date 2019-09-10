@@ -1,6 +1,6 @@
 # Memory Buffer & Agent Hyperparameters
 SEED = 101              # seed for random number generation
-BUFFER_SIZE = int(1e5)  # replay buffer size
+BUFFER_SIZE = int(1e4)  # replay buffer size
 BATCH_SIZE = 32         # minibatch size
 START_SINCE = int(8e3)  # number of steps to collect before start learning
 GAMMA = 0.99            # discount factor
