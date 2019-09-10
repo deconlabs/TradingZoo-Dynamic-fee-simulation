@@ -4,6 +4,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 import os
+from os.path import dirname
+import sys
+sys.path.append(dirname(dirname(sys.path[0])))
 
 import torch
 import torch.nn as nn
@@ -51,7 +54,7 @@ torch.save({'n_episodes': n_episodes, 'sample_len': sample_len, 'obs_data_len': 
             'init_budget': init_budget},
            os.path.join(save_location, "config.pth"))
 
-df = pd.read_hdf('dataset/binance_data_train.h5', 'STW')
+df = pd.read_hdf('../../dataset/binance_data_train.h5', 'STW')
 df.fillna(method='ffill', inplace=True)
 
 def main():

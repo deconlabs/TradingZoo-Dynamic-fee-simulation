@@ -1,4 +1,7 @@
 import os
+from os.path import dirname
+import sys
+sys.path.append(dirname(dirname(sys.path[0])))
 import importlib
 import random
 import numpy as np
@@ -43,7 +46,7 @@ init_budget = 1
 
 torch.save(hyperparams, os.path.join(save_location, "hyperparams.pth"))
 
-df = pd.read_hdf('dataset/binance_data_train.h5', 'STW')
+df = pd.read_hdf('../../dataset/binance_data_train.h5', 'STW')
 df.fillna(method='ffill', inplace=True)
 
 def main():
