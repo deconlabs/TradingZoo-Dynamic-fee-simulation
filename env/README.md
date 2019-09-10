@@ -159,6 +159,8 @@ self.obs_features
 : Observation features are selected among the features of df.
   
 
+  
+
 self.posi_arr
 
 : The information of the position at current timestep. ( positive → long, negative → short)
@@ -186,7 +188,6 @@ self.price_mean_arr
 self.reward_fluctuant_arr
 
 : It shows the unrealized gains. When the action is taken, these values change to obs_reward. 
-  
 
 self.reward_makereal_arr
 
