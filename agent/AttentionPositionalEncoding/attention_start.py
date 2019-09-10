@@ -82,7 +82,7 @@ def main():
             score += reward
             if reward < 0:
                 reward *= risk_aversion_multiplier
-            if sell_at_end and done:
+            if done:
                 action = 2 * n_action_intervals
             actions.append(action)
             agent.step(state, action, reward, next_state, done)

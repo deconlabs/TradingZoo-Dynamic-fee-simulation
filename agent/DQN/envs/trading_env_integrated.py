@@ -92,16 +92,19 @@ class TradingEnv:
         self.transaction_details = pd.DataFrame()
         self.logger.info('Making new env: {}'.format(env_id))
 
-    def _random_choice_section(self):  
-        begin_point = np.random.randint(len(self.df) - self.sample_len + 1)
+    def _random_choice_section(self, fixed_begin_point=None): 
+        if fixed_begin_point:
+            begin_point = fixed_begin_point
+        else:
+            begin_point = np.random.randint(len(self.df) - self.sample_len + 1)
         end_point = begin_point + self.sample_len
         df_section = self.df.iloc[begin_point: end_point]
         return df_section
 
-    def reset(self):  # prepares various state components
+    def reset(self,fixed_begin_point=None):  # prepares various state components
         self.total_fee = 0
         self.total_volume = 0
-        self.df_sample = self._random_choice_section()
+        self.df_sample = self._random_choice_section(fixed_begin_point)
 
         self.step_st = 0
         # define the price to calculate the reward

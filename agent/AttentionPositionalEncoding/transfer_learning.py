@@ -10,7 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from custom_trading_env import TradingEnv
+from envs.trading_env_integrated import TradingEnv
 import DQNTradingAgent.dqn_agent as dqn_agent
 from custom_hyperparameters import hyperparams
 from arguments import argparser
@@ -23,7 +23,10 @@ dqn_agent.set_device(device)
 
 load_location = 'saves/Original/{}'.format(args.save_num)
 
-save_location = 'saves/transfer/{}/{}'.format(args.fee , args.save_num)
+if args.environment=="default":
+    save_location = 'saves/transfer/{}/{}'.format(args.fee, args.save_num)
+else:
+    save_location = 'saves/transfer/{}/{}'.format(args.environment , args.save_num)
 
 if not os.path.exists(save_location):
     os.makedirs(save_location)
@@ -36,6 +39,7 @@ sample_len   = 480
 obs_data_len = 192
 step_len     = 1
 fee          = args.fee
+sell_at_end  = False
 
 risk_aversion_multiplier = 0.5 + args.risk_aversion / 2
 
@@ -55,11 +59,12 @@ df.fillna(method='ffill', inplace=True)
 def main():
 
     env = TradingEnv(custom_args=args, env_id='custom_trading_env', obs_data_len=obs_data_len, step_len=step_len, sample_len=sample_len,
-                           df=df, fee=fee, initial_budget=1, n_action_intervals=n_action_intervals, deal_col_name='c', sell_at_end=True,
-                           feature_names=['o', 'h','l','c','v',
-                                          'num_trades', 'taker_base_vol'])
+                     df=df, fee=fee, initial_budget=1, n_action_intervals=n_action_intervals, deal_col_name='c',
+                     sell_at_end=sell_at_end,
+                     feature_names=['o', 'h','l','c','v',
+                                    'num_trades', 'taker_base_vol'])
     agent = dqn_agent.Agent(action_size=2 * n_action_intervals + 1, obs_len=obs_data_len, num_features=env.reset().shape[-1], **hyperparams)
-    agent.qnetwork_local.load_state_dict(torch.load(os.path.join(load_location, 'TradingGym_Rainbow_3000.pth'), map_location=device))
+    agent.qnetwork_local.load_state_dict(torch.load(os.path.join(load_location, 'TradingGym_Rainbow_1000.pth'), map_location=device))
     agent.qnetwork_local.to(device)
 
     beta = 0.4
@@ -69,7 +74,7 @@ def main():
     scores_list = []
     
     
-    for i_episode in range(n_episodes):
+    for i_episode in range(1,n_episodes+1):
         state = env.reset()
         score = 0.
         actions = []
@@ -78,7 +83,7 @@ def main():
         # for t in range(num_steps):
         while True:
             action = int(agent.act(state, eps=0.))
-            next_state, reward, done, _ = env.step(action)
+            next_state, reward, done, _ , fee_rate = env.step(action)
 
             rewards.append(reward)
             score += reward
