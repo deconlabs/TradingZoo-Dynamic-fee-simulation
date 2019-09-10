@@ -82,7 +82,7 @@ def main():
         # for t in range(num_steps):
         while True:
             action = int(agent.act(state, eps=0.))
-            next_state, reward, done, _  = env.step(action)
+            next_state, reward, done, info  = env.step(action)
            
             rewards.append(reward)
             score += reward
@@ -104,7 +104,7 @@ def main():
         scores_list.append(score)
 
         if i_episode % print_interval == 0 and i_episode != 0:
-            print_str = "# of episode: {:d}, avg score: {:.4f}\n  Actions: {} \n fee rate: {}".format(i_episode, sum(scores_list[-print_interval:]) / print_interval, np.array(actions), fee_rate)
+            print_str = "# of episode: {:d}, avg score: {:.4f}\n  Actions: {} \n fee rate: {}".format(i_episode, sum(scores_list[-print_interval:]) / print_interval, np.array(actions), info['fee_rate'])
             print(print_str)
             # with open(os.path.join(save_location, "output_log.txt"), mode='a') as f:
             #     f.write(print_str + '\n')
