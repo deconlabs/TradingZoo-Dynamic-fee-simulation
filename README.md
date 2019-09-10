@@ -18,15 +18,12 @@ Our project environment is based on https://github.com/Yvictor/TradingGym/
     Stores the environment where fee different fee mechanisms applied
 
 # Simulation Method
-<<<<<<< HEAD
- 1. Train RL agents using [trading gym](https://github.com/Yvictor/TradingGym/). 
-=======
+
  1. **Train RL agents** using [trading gym](https://github.com/Yvictor/TradingGym/). 
->>>>>>> upstream/master
+
 
  2. **Transfer agents** to different environments where different fee mechanism is applied. 
  Agents will trained again for 500 episodes more to adapt to each environment. Also, differentiate agents by varying risk_aversion ratio so that some agents prefer risk while others not.
-
  3. **Observe** how agents behave in each environment. Especially watch the total_volume and total_fee from each environment. Derive insights from the observation what characteristics of fee mechanism makes the difference.
 
 
