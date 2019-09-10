@@ -2,16 +2,22 @@ import os
 from os.path import dirname
 import sys
 sys.path.append(dirname(dirname(sys.path[0])))
+print(dirname(dirname(sys.path[0])))
 
 import random
 import numpy as np
+
 import pandas as pd
+
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+
 
 from envs.trading_env_integrated import TradingEnv
 import DQNTradingAgent.dqn_agent as dqn_agent
