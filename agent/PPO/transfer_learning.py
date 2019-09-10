@@ -1,7 +1,4 @@
 import os
-from os.path import dirname
-import sys
-sys.path.append(dirname(dirname(sys.path[0])))
 import random
 import numpy as np
 import pandas as pd
@@ -13,8 +10,8 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.distributions import Categorical
 
-from envs.trading_env_integrated import TradingEnv
-from utils import collect_trajectories, clipped_surrogate
+from custom_trading_env import TradingEnv
+from utils import collect_trajectories, clipped_surrogate,device
 from PPOTradingAgent.model import CNNTradingAgent
 from common.multiprocessing_env import  SubprocVecEnv
 from arguments import argparser
@@ -22,7 +19,7 @@ from arguments import argparser
 # Hyperparameters
 
 args = argparser()
-device = "cuda:" + str(args.device_num) if torch.cuda.is_available() else "cpu"
+device = device
 save_interval = 1000
 num_envs = 16
 n_episodes   = args.n_episodes
@@ -33,10 +30,14 @@ risk_aversion_multiplier = 0.5 + args.risk_aversion / 2
 n_action_intervals = 5
 init_budget = 1
 
-df = pd.read_hdf('../../dataset/binance_data_train.h5', 'STW')
+df = pd.read_hdf('dataset/binance_data_train.h5', 'STW')
 df.fillna(method='ffill', inplace=True)
 
-save_location = 'saves/Original/{}'.format(args.save_num)
+load_location = 'saves/Original/{}'.format(args.save_num)
+if args.environment=="default":
+    save_location = 'saves/transfer/{}/{}'.format(args.fee, args.save_num)
+else:
+    save_location = 'saves/transfer/{}/{}'.format(args.environment , args.save_num)
 if not os.path.exists(save_location):
     os.makedirs(save_location)
 
@@ -62,6 +63,8 @@ def main():
     envs = [make_env() for _ in range(num_envs)]
     envs = SubprocVecEnv(envs)
     model = CNNTradingAgent(num_features=envs.reset().shape[-1], n_actions=2 * n_action_intervals + 1).to(device)
+    model.load_state_dict(torch.load(os.path.join(load_location, 'TradingGym_10000.pth'), map_location=device))
+     
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     print_interval = 10
@@ -100,11 +103,6 @@ def main():
         if n_epi % save_interval ==0:
             torch.save(model.state_dict(), os.path.join(save_location,f'TradingGym_{n_epi}.pth'))
             torch.save(scores_list, os.path.join(save_location,f"{n_epi}_scores.pth"))
-            # plt.plot(scores_list)
-            # plt.title("Reward")
-            # plt.grid(True)
-            # plt.savefig(os.path.join(save_location,f'{n_epi}_ppo.png'))
-            # plt.close()
 
     del envs
 

@@ -263,7 +263,7 @@ class TradingEnv:
             #                                                'reward'],
             #                                         columns=self.df_sample.index).T
             # self.info = self.df_sample.join(self.transaction_details)
-            self.info = self.fee_rate, 
+            self.info = {'fee_rate': self.fee_rate, }
 
         # use next tick, maybe choice avg in first 10 tick will be better to real backtest
         # If action value is between 0~20, [0,9] -> buy , 10 = hold [11,20] -> sell
@@ -300,7 +300,7 @@ class TradingEnv:
                                               ), axis=1)
         else:
             self.obs_return = self.obs_state
-        return self.obs_return, self.chg_reward[0], done, self.info, self.fee_rate
+        return self.obs_return, self.chg_reward[0], done, self.info
 
     # =====================================================Rendering Stuff=====================================================#
 

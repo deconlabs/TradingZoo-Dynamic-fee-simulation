@@ -1,9 +1,12 @@
+import os
+from os.path import dirname
+import sys
+sys.path.append(dirname(dirname(sys.path[0])))
+
 import random
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-
-import os
 
 import torch
 import torch.nn as nn
@@ -45,7 +48,7 @@ init_budget = 1
 
 torch.save(hyperparams, os.path.join(save_location, "hyperparams.pth"))
 
-df = pd.read_hdf('dataset/binance_data_train.h5', 'STW')
+df = pd.read_hdf('../../dataset/binance_data_train.h5', 'STW')
 df.fillna(method='ffill', inplace=True)
 
 def main():
@@ -76,7 +79,7 @@ def main():
 
         while True:
             action = int(agent.act(state, eps=0.))
-            next_state, reward, done, _, fee_rate = env.step(action)
+            next_state, reward, done, _ = env.step(action)
 
             rewards.append(reward)
             score += reward

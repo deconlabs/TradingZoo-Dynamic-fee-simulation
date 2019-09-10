@@ -74,7 +74,7 @@ def main():
         while True:
             action = int(agent.act(state, eps=0.))
             actions.append(action)
-            next_state, reward, done, _ , fee_rate = env.step(action)
+            next_state, reward, done, _  = env.step(action)
 
             rewards.append(reward)
             score += reward
