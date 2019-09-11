@@ -9,6 +9,8 @@ The project overview video : https://youtu.be/kBjv4KmkEHU
 
 Our project environment is based on https://github.com/Yvictor/TradingGym/
 
+Project Explanation : https://medium.com/decon-simulation/dynamic-fee-mechanism-simulation-with-reinforcement-learning-97c847aa5c
+
 # Structure
 1. [agent](https://github.com/deconlabs/Binanace_trading_simulation/tree/master/agent)
     Stores trading agents and specify how to train the agents and how to use them. 
@@ -90,6 +92,7 @@ cd agent/DQN
 ```
 Open Observation notebook and run all cell
 
+# Results
 ## Total fee and total volume under different fee rate
 ![total_fee](figs/TotalFee.png)
 ![total_volume](figs/TotalVolume.png)
@@ -100,3 +103,8 @@ X axis represents actions and Y axis represents the feature of data. The graph s
 
 RAINBOW
 ![Rainbow](figs/bollinger_IG.png)
+
+
+## Same Agent and Same OHLCV state, but different decision
+![DifferentDecision](figs/Agent1DifferentDecision.png)
+The above figure shows the trading volume of Agent1 differing the fee environment. It shows same agent under same OHLCV situation makes different decisions.

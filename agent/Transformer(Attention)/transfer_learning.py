@@ -92,6 +92,8 @@ def main():
         # for t in range(num_steps):
         while True:
             action = int(agent.act(state, eps=0.))
+            return_ = env.step(action)
+            print(len(return_))
             next_state, reward, done, _  = env.step(action)
 
             rewards.append(reward)
