@@ -11,7 +11,7 @@ nice explanation [here](https://github.com/Curt-Park/rainbow-is-all-you-need)
 
 ### PPO
 On-policy learning
-Always collects new experience
+always collects new experience
 
 ### Attention
 Q , K, V
