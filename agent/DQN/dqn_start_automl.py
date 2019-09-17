@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 import matplotlib.pyplot as plt
-import logger
+import logging
 import nni
 
 import torch
