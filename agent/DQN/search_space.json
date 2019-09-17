@@ -1,0 +1,9 @@
+{
+    "buffer_size":{"_type":"choice","_value":[10000 , 50000, 100000]},
+    "n_multisteps":{"_type":"choice","_value":[1,5,10,20]},
+    "a":{"_type":"uniform","_value":[0.1,0.9]},
+    "v_min": {"_type":"uniform", "_value": [0.1,0.9]},
+    "v_max":{"_type":"uniform","_value":[0.1,0.9]},
+    "n_atoms": {"_type":"quniform","_value":[20,51,1]},
+    "initial_sigma":{"_type":"uniform", "_value":[0.1,0.9]}
+}
