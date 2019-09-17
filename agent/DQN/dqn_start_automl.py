@@ -121,5 +121,5 @@ if __name__ == '__main__':
         params.update(tuner_params) #set parmater to next parameters
         main(params)
     except Exception as e:
-        logging.exception(e)
+        logger.exception(e)
         raise
