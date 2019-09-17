@@ -21,7 +21,7 @@ from envs.trading_env_integrated import TradingEnv
 from custom_hyperparameters import hyperparams
 from arguments import argparser
 
-
+logger = logging.getLogger('AutoML')
 args = argparser() # device_num, save_num, risk_aversion, n_episodes
 
 torch.cuda.manual_seed_all(7)
