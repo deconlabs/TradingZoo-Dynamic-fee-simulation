@@ -17,6 +17,6 @@ tuner:
     #choice: maximize, minimize
     optimize_mode: maximize
 trial:
-  command: python3 dqn_start.py
+  command: python3 dqn_start_automl.py
   codeDir: .
   gpuNum: 0
