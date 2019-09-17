@@ -1,0 +1,22 @@
+authorName: default
+experimentName: DQN_agent
+trialConcurrency: 4
+maxExecDuration: 1h
+maxTrialNum: 10
+logDir: /home/jeffrey/nni/binance/agent/DQN/logs
+#choice: local, remote, pai
+trainingServicePlatform: local
+searchSpacePath: search_space.json
+#choice: true, false
+useAnnotation: false
+tuner:
+  #choice: TPE, Random, Anneal, Evolution, BatchTuner, MetisTuner, GPTuner
+  #SMAC (SMAC should be installed through nnictl)
+  builtinTunerName: TPE
+  classArgs:
+    #choice: maximize, minimize
+    optimize_mode: maximize
+trial:
+  command: python3 dqn_start.py
+  codeDir: .
+  gpuNum: 0
