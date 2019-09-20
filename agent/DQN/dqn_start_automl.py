@@ -7,7 +7,7 @@ import random
 import numpy as np
 import pandas as pd
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import logging
 import nni
 
@@ -60,7 +60,7 @@ def main(params):
                                           'num_trades', 'taker_base_vol'])
     agent = dqn_agent.Agent(action_size=2 * n_action_intervals + 1, obs_len=obs_data_len, num_features=env.reset().shape[-1], \
         buffer_size=params['buffer_size'], n_multisteps =params['n_multisteps'], a=params['a'], v_max=params['v_max'],v_min=params['v_min'], \
-        n_atom = params['n_atom'], initial_sigma=params['initial_sigma'])
+        n_atom = params['n_atoms'], initial_sigma=params['initial_sigma'])
 
     beta = 0.4
     beta_inc = (1 - beta) / 1000
