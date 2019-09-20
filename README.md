@@ -11,6 +11,8 @@ Our project environment is based on https://github.com/Yvictor/TradingGym/
 
 Project Explanation : https://medium.com/decon-simulation/dynamic-fee-mechanism-simulation-with-reinforcement-learning-97c847aa5c
 
+Project Explanation[KR]: https://medium.com/@jeffrey_7616/dynamic-fee-mechanism-simulation-with-reinforcement-learning-6d15951dec05
+
 # Structure
 1. [agent](https://github.com/deconlabs/Binanace_trading_simulation/tree/master/agent)
     Stores trading agents and specify how to train the agents and how to use them. 
